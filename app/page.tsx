@@ -1,10 +1,5 @@
 import { NewsletterForm } from "./components/newsletter-form";
 
-const stats = [
-  { value: "100+", label: "Schools trained" },
-  { value: "5,000+", label: "Educators impacted" },
-  { value: "10:1", label: "Time savings ratio" }
-];
 
 const audienceCards = [
   {
@@ -91,14 +86,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="trust-row">
-        {stats.map((stat) => (
-          <div className="trust-item" key={stat.label}>
-            <strong>{stat.value}</strong>
-            <span>{stat.label}</span>
-          </div>
-        ))}
-      </section>
 
       <section id="audience">
         <p className="eyebrow">Who we help</p>

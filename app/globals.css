@@ -252,33 +252,6 @@ input::placeholder {
   display: none;
 }
 
-.trust-row {
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  margin: 26px 0 34px;
-  padding: 14px 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.trust-item {
-  text-align: center;
-}
-
-.trust-item strong {
-  display: block;
-  color: var(--mint);
-  font-size: 1.3rem;
-}
-
-.trust-item span {
-  color: #9ca3af;
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
 section {
   padding: 14px 6px;
 }
@@ -370,9 +343,6 @@ h2 {
     display: none;
   }
 
-  .trust-row {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 640px) {
