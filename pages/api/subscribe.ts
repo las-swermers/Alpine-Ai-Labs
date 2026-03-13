@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -7,15 +7,10 @@ type KitErrorResponse = { error?: string; message?: string };
 function getKitConfig() {
   const apiKey = (process.env.KIT_API_KEY || process.env.CONVERTKIT_API_KEY || "").trim();
   const apiSecret = (process.env.KIT_API_SECRET || process.env.CONVERTKIT_API_SECRET || "").trim();
-  const formId = process.env.KIT_FORM_ID || process.env.CONVERTKIT_FORM_ID || "";
-  const tagId = process.env.KIT_TAG_ID || process.env.CONVERTKIT_TAG_ID || "";
+  const formId = (process.env.KIT_FORM_ID || process.env.CONVERTKIT_FORM_ID || "").trim();
+  const tagId = (process.env.KIT_TAG_ID || process.env.CONVERTKIT_TAG_ID || "").trim();
 
-  return {
-    apiKey,
-    apiSecret,
-    formId: formId.trim(),
-    tagId: tagId.trim()
-  };
+  return { apiKey, apiSecret, formId, tagId };
 }
 
 function getMissingKitVars(config: ReturnType<typeof getKitConfig>) {
@@ -46,8 +41,13 @@ async function parseKitError(response: Response) {
   }
 }
 
-export async function POST(request: NextRequest) {
-  let body: {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ status: "error", message: "Method not allowed." });
+  }
+
+  const body = (req.body || {}) as {
     email?: string;
     name?: string;
     firstName?: string;
@@ -59,17 +59,8 @@ export async function POST(request: NextRequest) {
     promptType?: string;
   };
 
-  try {
-    body = (await request.json()) as typeof body;
-  } catch {
-    return NextResponse.json(
-      { status: "error", message: "Invalid JSON payload." },
-      { status: 400 }
-    );
-  }
-
   if (body.company) {
-    return NextResponse.json({ status: "ok" }, { status: 200 });
+    return res.status(200).json({ status: "ok" });
   }
 
   const email = body.email?.trim().toLowerCase() ?? "";
@@ -83,20 +74,16 @@ export async function POST(request: NextRequest) {
   const promptType = body.promptType?.trim() || "none_selected";
 
   if (!EMAIL_REGEX.test(email)) {
-    return NextResponse.json({ status: "error", message: "Invalid email address." }, { status: 400 });
+    return res.status(400).json({ status: "error", message: "Invalid email address." });
   }
 
   const { apiKey, apiSecret, formId, tagId } = getKitConfig();
   const missingVars = getMissingKitVars({ apiKey, apiSecret, formId, tagId });
 
   if (missingVars.length > 0) {
-    return NextResponse.json(
-      {
-        status: "error",
-        message: `Missing Kit server configuration: ${missingVars.join(", ")}.`
-      },
-      { status: 500 }
-    );
+    return res
+      .status(500)
+      .json({ status: "error", message: `Missing Kit server configuration: ${missingVars.join(", ")}.` });
   }
 
   const payload: Record<string, unknown> = {
@@ -122,22 +109,16 @@ export async function POST(request: NextRequest) {
     });
 
     if (response.ok) {
-      return NextResponse.json({ status: "ok" }, { status: 200 });
+      return res.status(200).json({ status: "ok" });
     }
 
     const errorMessage = (await parseKitError(response)).toLowerCase();
     if (response.status === 422 && errorMessage.includes("already")) {
-      return NextResponse.json({ status: "duplicate" }, { status: 409 });
+      return res.status(409).json({ status: "duplicate" });
     }
 
-    return NextResponse.json(
-      { status: "error", message: errorMessage || "Kit request failed." },
-      { status: response.status }
-    );
+    return res.status(response.status).json({ status: "error", message: errorMessage || "Kit request failed." });
   } catch {
-    return NextResponse.json(
-      { status: "error", message: "Could not reach Kit API." },
-      { status: 502 }
-    );
+    return res.status(502).json({ status: "error", message: "Could not reach Kit API." });
   }
 }

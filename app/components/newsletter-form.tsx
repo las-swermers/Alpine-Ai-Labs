@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type FormState = "idle" | "loading" | "success" | "duplicate" | "error";
 type InterestType = "next_webinar_input" | "in_person_workshops" | "ai_resource_toolkit" | "email_newsletter";
@@ -99,7 +99,27 @@ export function NewsletterForm() {
   const closeModal = () => {
     setOpen(false);
     setStep(1);
+    setState("idle");
+    setMessage("");
+    if (window.location.hash === "#newsletter-signup") {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
   };
+
+  useEffect(() => {
+    const openFromHash = () => {
+      if (window.location.hash === "#newsletter-signup") {
+        setOpen(true);
+      }
+    };
+
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+
+    return () => {
+      window.removeEventListener("hashchange", openFromHash);
+    };
+  }, []);
 
   const nextFromInterest = () => {
     if (!interestType) {
@@ -180,7 +200,14 @@ export function NewsletterForm() {
   return (
     <>
       <div className="popup-trigger-wrap">
-        <button type="button" className="btn btn-accent" onClick={() => setOpen(true)}>
+        <button
+          type="button"
+          className="btn btn-accent"
+          onClick={() => {
+            window.location.hash = "newsletter-signup";
+            setOpen(true);
+          }}
+        >
           Get your free AI toolkit
         </button>
       </div>

@@ -45,7 +45,8 @@ const services = [
 ];
 
 export default function HomePage() {
-  const newsletterSignupHref = process.env.NEXT_PUBLIC_KIT_COLLECTION_URL?.trim() || "#signup";
+  const newsletterSignupHref = "#newsletter-signup";
+  const externalKitSignupHref = process.env.NEXT_PUBLIC_KIT_COLLECTION_URL?.trim() || "";
 
   return (
     <main className="page">
@@ -63,7 +64,7 @@ export default function HomePage() {
         </a>
       </header>
 
-      <section className="hero" id="signup">
+      <section className="hero" id="newsletter-signup">
         <p className="pill">Built by educators for educators</p>
         <h1>
           AI training for schools <span>without the overwhelm</span>
@@ -117,6 +118,11 @@ export default function HomePage() {
         <a className="btn btn-accent" href={newsletterSignupHref}>
           Get started free
         </a>
+        {externalKitSignupHref ? (
+          <a className="btn btn-secondary" href={externalKitSignupHref} target="_blank" rel="noreferrer">
+            Open Kit signup page
+          </a>
+        ) : null}
       </section>
 
       <footer className="footer">
