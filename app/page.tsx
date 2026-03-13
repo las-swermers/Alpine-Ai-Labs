@@ -45,6 +45,8 @@ const services = [
 ];
 
 export default function HomePage() {
+  const newsletterSignupHref = process.env.NEXT_PUBLIC_KIT_COLLECTION_URL?.trim() || "#signup";
+
   return (
     <main className="page">
       <header className="nav">
@@ -56,7 +58,7 @@ export default function HomePage() {
           <a href="#services">Workshops</a>
           <a href="#audience">For schools</a>
         </nav>
-        <a className="btn btn-secondary" href="#signup">
+        <a className="btn btn-secondary" href={newsletterSignupHref}>
           Join the newsletter
         </a>
       </header>
@@ -112,7 +114,7 @@ export default function HomePage() {
       <section className="footer-cta">
         <h2>Ready to bring AI into your school?</h2>
         <p>Join our newsletter for live tips, tools, and workshop announcements.</p>
-        <a className="btn btn-accent" href="#signup">
+        <a className="btn btn-accent" href={newsletterSignupHref}>
           Get started free
         </a>
       </section>

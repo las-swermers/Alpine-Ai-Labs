@@ -14,6 +14,7 @@ Mission statement  Practical AI training and consulting for K-12 educators, coun
    cp .env.example .env.local
    ```
 3. Add Kit credentials to `.env.local` (`KIT_API_KEY` and either `KIT_FORM_ID` or `KIT_TAG_ID`). `KIT_API_SECRET` is optional. Legacy `CONVERTKIT_*` variable names are also supported.
+   - Optional: set `NEXT_PUBLIC_KIT_COLLECTION_URL` to send newsletter CTA buttons directly to your Kit Collection signup URL.
 4. Run the app:
    ```bash
    npm run dev

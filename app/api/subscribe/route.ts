@@ -5,8 +5,8 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 type KitErrorResponse = { error?: string; message?: string };
 
 function getKitConfig() {
-  const apiKey = process.env.KIT_API_KEY || process.env.CONVERTKIT_API_KEY || "";
-  const apiSecret = process.env.KIT_API_SECRET || process.env.CONVERTKIT_API_SECRET || "";
+  const apiKey = (process.env.KIT_API_KEY || process.env.CONVERTKIT_API_KEY || "").trim();
+  const apiSecret = (process.env.KIT_API_SECRET || process.env.CONVERTKIT_API_SECRET || "").trim();
   const formId = process.env.KIT_FORM_ID || process.env.CONVERTKIT_FORM_ID || "";
   const tagId = process.env.KIT_TAG_ID || process.env.CONVERTKIT_TAG_ID || "";
 
@@ -16,6 +16,20 @@ function getKitConfig() {
     formId: formId.trim(),
     tagId: tagId.trim()
   };
+}
+
+function getMissingKitVars(config: ReturnType<typeof getKitConfig>) {
+  const missing: string[] = [];
+
+  if (!config.apiKey) {
+    missing.push("KIT_API_KEY");
+  }
+
+  if (!config.formId && !config.tagId) {
+    missing.push("KIT_FORM_ID|KIT_TAG_ID");
+  }
+
+  return missing;
 }
 
 async function parseKitError(response: Response) {
@@ -33,7 +47,7 @@ async function parseKitError(response: Response) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as {
+  let body: {
     email?: string;
     name?: string;
     firstName?: string;
@@ -44,6 +58,15 @@ export async function POST(request: NextRequest) {
     company?: string;
     promptType?: string;
   };
+
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return NextResponse.json(
+      { status: "error", message: "Invalid JSON payload." },
+      { status: 400 }
+    );
+  }
 
   if (body.company) {
     return NextResponse.json({ status: "ok" }, { status: 200 });
@@ -64,10 +87,14 @@ export async function POST(request: NextRequest) {
   }
 
   const { apiKey, apiSecret, formId, tagId } = getKitConfig();
+  const missingVars = getMissingKitVars({ apiKey, apiSecret, formId, tagId });
 
-  if (!apiKey || (!formId && !tagId)) {
+  if (missingVars.length > 0) {
     return NextResponse.json(
-      { status: "error", message: "Missing Kit server configuration." },
+      {
+        status: "error",
+        message: `Missing Kit server configuration: ${missingVars.join(", ")}.`
+      },
       { status: 500 }
     );
   }
