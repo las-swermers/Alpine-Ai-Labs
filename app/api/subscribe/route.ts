@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
     resource?: string;
     source?: string;
     company?: string;
+    promptType?: string;
   };
 
   if (body.company) {
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
   const source = body.source?.trim() || "website";
   const role = body.role?.trim() || "unknown";
   const resource = body.resource?.trim() || "none_selected";
+  const promptType = body.promptType?.trim() || "none_selected";
 
   if (!EMAIL_REGEX.test(email)) {
     return NextResponse.json({ status: "error", message: "Invalid email address." }, { status: 400 });
@@ -74,7 +76,7 @@ export async function POST(request: NextRequest) {
     api_key: apiKey,
     email,
     first_name: name,
-    fields: { source, role, resource }
+    fields: { source, role, resource, prompt_type: promptType }
   };
 
   const target = formId

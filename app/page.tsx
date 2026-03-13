@@ -71,15 +71,10 @@ export default function HomePage() {
           who work in schools every day.
         </p>
         <div className="cta-row">
-          <a className="btn btn-accent" href="#signup-form">
-            Get your free AI toolkit
-          </a>
+          <NewsletterForm />
           <a className="btn btn-secondary" href="#services">
             Explore workshops
           </a>
-        </div>
-        <div id="signup-form" className="form-shell">
-          <NewsletterForm />
         </div>
       </section>
 

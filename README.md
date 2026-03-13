@@ -18,3 +18,8 @@ Mission statement  Practical AI training and consulting for K-12 educators, coun
    ```bash
    npm run dev
    ```
+
+
+## Downloadable resources
+- Files served from `public/ai-download-docs/` are linked in the popup toolkit flow.
+- Replace the placeholder `.txt` files with your final PDFs/docs while keeping filenames stable, or update the links in `app/components/newsletter-form.tsx`.

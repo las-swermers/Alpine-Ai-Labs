@@ -1,22 +1,128 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 
 type FormState = "idle" | "loading" | "success" | "duplicate" | "error";
-type Resource = "prompt_template_pack" | "mini_webinar" | "early_workshop_access" | "ai_tools_list";
+type InterestType = "next_webinar_input" | "in_person_workshops" | "ai_resource_toolkit" | "email_newsletter";
+type PromptType =
+  | "teachers_prompt_pack"
+  | "counselors_prompt_kit"
+  | "group_project_generator"
+  | "iep_accommodation_assistant"
+  | "admin_tech_starter_pack"
+  | "student_facing_prompt_pack"
+  | "alpine_ai_tools_guide";
 
-const resources: Array<{ id: Resource; label: string; icon: string }> = [
-  { id: "prompt_template_pack", label: "Prompt template pack", icon: "✎" },
-  { id: "mini_webinar", label: "Free mini webinar", icon: "▶" },
-  { id: "early_workshop_access", label: "Early workshop access", icon: "★" },
-  { id: "ai_tools_list", label: "AI tools resource list", icon: "◆" }
+const interestOptions: Array<{ id: InterestType; label: string; helper: string }> = [
+  {
+    id: "next_webinar_input",
+    label: "Receive input on the next webinar",
+    helper: "Share what you want covered and get invited first."
+  },
+  {
+    id: "in_person_workshops",
+    label: "Just in-person workshops coming up",
+    helper: "Only hear about upcoming onsite training sessions."
+  },
+  {
+    id: "ai_resource_toolkit",
+    label: "AI resource toolkit",
+    helper: "Choose prompt packs and download resources right away."
+  },
+  {
+    id: "email_newsletter",
+    label: "Just email newsletter",
+    helper: "Weekly practical updates, no extra event notices."
+  }
 ];
 
+const promptOptions: Array<{ id: PromptType; label: string; helper: string }> = [
+  { id: "teachers_prompt_pack", label: "Teacher's AI Prompt Pack", helper: "Lesson planning and feedback prompts." },
+  { id: "counselors_prompt_kit", label: "Counselor's AI Prompt Kit", helper: "Student support and documentation prompts." },
+  { id: "group_project_generator", label: "Group Project Generator", helper: "Team activity scaffolds and rubrics." },
+  {
+    id: "iep_accommodation_assistant",
+    label: "IEP and Accommodation Assistant",
+    helper: "Support plans and differentiated instruction prompts."
+  },
+  {
+    id: "admin_tech_starter_pack",
+    label: "Admin and Tech Director Starter Pack",
+    helper: "Policy, rollout, and implementation prompts."
+  },
+  {
+    id: "student_facing_prompt_pack",
+    label: "Student-Facing Prompt Pack",
+    helper: "Age-appropriate prompts students can use directly."
+  },
+  { id: "alpine_ai_tools_guide", label: "Alpine AI Tools Guide", helper: "Quick tool overview for school workflows." }
+];
+
+const promptDownloads: Record<PromptType, Array<{ label: string; href: string }>> = {
+  teachers_prompt_pack: [
+    { label: "Teacher's AI Prompt Pack", href: "/ai-download-docs/teachers-ai-prompt-pack.txt" },
+    { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }
+  ],
+  counselors_prompt_kit: [
+    { label: "Counselor's AI Prompt Kit", href: "/ai-download-docs/counselors-ai-prompt-kit.txt" },
+    { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }
+  ],
+  group_project_generator: [
+    { label: "Group Project Generator", href: "/ai-download-docs/group-project-generator.txt" },
+    { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }
+  ],
+  iep_accommodation_assistant: [
+    { label: "IEP and Accommodation Assistant", href: "/ai-download-docs/iep-and-accommodation-assistant.txt" },
+    { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }
+  ],
+  admin_tech_starter_pack: [
+    { label: "Admin and Tech Director Starter Pack", href: "/ai-download-docs/admin-tech-director-starter-pack.txt" },
+    { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }
+  ],
+  student_facing_prompt_pack: [
+    { label: "Student-Facing Prompt Pack", href: "/ai-download-docs/student-facing-prompt-pack.txt" },
+    { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }
+  ],
+  alpine_ai_tools_guide: [{ label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }]
+};
+
 export function NewsletterForm() {
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [state, setState] = useState<FormState>("idle");
   const [message, setMessage] = useState("");
-  const [selectedResource, setSelectedResource] = useState<Resource>("prompt_template_pack");
+  const [interestType, setInterestType] = useState<InterestType | null>(null);
+  const [promptType, setPromptType] = useState<PromptType>("teachers_prompt_pack");
 
+  const downloads = useMemo(() => promptDownloads[promptType], [promptType]);
+
+  const closeModal = () => {
+    setOpen(false);
+    setStep(1);
+  };
+
+  const nextFromInterest = () => {
+    if (!interestType) {
+      return;
+    }
+
+    if (interestType === "ai_resource_toolkit") {
+      setStep(2);
+      return;
+    }
+
+    setStep(3);
+  };
+
+
+  const handleContinue = () => {
+    if (step === 1) {
+      nextFromInterest();
+      return;
+    }
+
+    setStep(3);
+  };
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setState("loading");
@@ -32,8 +138,9 @@ export function NewsletterForm() {
       lastName,
       name: `${firstName} ${lastName}`.trim(),
       role: String(formData.get("role") ?? ""),
-      resource: selectedResource,
-      source: "landing_hero",
+      resource: interestType ?? "email_newsletter",
+      promptType,
+      source: "landing_popup",
       company: String(formData.get("company") ?? "")
     };
 
@@ -47,9 +154,12 @@ export function NewsletterForm() {
 
       if (response.ok && data.status === "ok") {
         setState("success");
-        setMessage("You’re in. Check your inbox for your free resource.");
+        setMessage(
+          interestType === "ai_resource_toolkit"
+            ? "You’re in. Your selected downloads are ready below."
+            : "You’re in. Check your inbox for updates."
+        );
         event.currentTarget.reset();
-        setSelectedResource("prompt_template_pack");
         return;
       }
 
@@ -68,56 +178,152 @@ export function NewsletterForm() {
   };
 
   return (
-    <form className="newsletter" onSubmit={handleSubmit}>
-      <div className="name-grid">
-        <input id="firstName" name="firstName" type="text" placeholder="First name" required autoComplete="given-name" />
-        <input id="lastName" name="lastName" type="text" placeholder="Last name" required autoComplete="family-name" />
+    <>
+      <div className="popup-trigger-wrap">
+        <button type="button" className="btn btn-accent" onClick={() => setOpen(true)}>
+          Get your free AI toolkit
+        </button>
       </div>
 
-      <input
-        id="email"
-        name="email"
-        type="email"
-        placeholder="Work email address"
-        required
-        autoComplete="email"
-      />
+      {open ? (
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Newsletter and resources popup">
+          <div className="modal-card">
+            <div className="modal-header">
+              <div>
+                <p className="eyebrow">Alpine AI Labs</p>
+                <h3>Choose what you want from us</h3>
+              </div>
+              <button type="button" className="modal-close" onClick={closeModal} aria-label="Close popup">
+                ×
+              </button>
+            </div>
 
-      <select id="role" name="role" required defaultValue="">
-        <option value="" disabled>
-          Your role...
-        </option>
-        <option value="teacher">Teacher</option>
-        <option value="counselor">Counselor</option>
-        <option value="tech_director">Tech director</option>
-        <option value="administrator">Administrator</option>
-      </select>
+            <p className="modal-step">Step {step} of 3</p>
 
-      <div>
-        <p className="resource-label">Choose your free resource:</p>
-        <div className="resource-grid">
-          {resources.map((resource) => (
-            <button
-              key={resource.id}
-              type="button"
-              className={`resource-card ${selectedResource === resource.id ? "active" : ""}`}
-              onClick={() => setSelectedResource(resource.id)}
-            >
-              <span className="resource-icon">{resource.icon}</span>
-              <span>{resource.label}</span>
-            </button>
-          ))}
+            {step === 1 ? (
+              <div className="option-grid">
+                {interestOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`option-card ${interestType === option.id ? "active" : ""}`}
+                    onClick={() => setInterestType(option.id)}
+                  >
+                    <strong>{option.label}</strong>
+                    <span>{option.helper}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {step === 2 ? (
+              <div className="option-grid">
+                {promptOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`option-card ${promptType === option.id ? "active" : ""}`}
+                    onClick={() => setPromptType(option.id)}
+                  >
+                    <strong>{option.label}</strong>
+                    <span>{option.helper}</span>
+                  </button>
+                ))}
+                <div className="download-preview">
+                  <p>Downloads included:</p>
+                  <ul>
+                    {downloads.map((item) => (
+                      <li key={item.href}>{item.label}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ) : null}
+
+            {step === 3 ? (
+              <form className="newsletter" onSubmit={handleSubmit}>
+                <div className="name-grid">
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    placeholder="First name"
+                    required
+                    autoComplete="given-name"
+                  />
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    placeholder="Last name"
+                    required
+                    autoComplete="family-name"
+                  />
+                </div>
+
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Work email address"
+                  required
+                  autoComplete="email"
+                />
+
+                <select id="role" name="role" required defaultValue="">
+                  <option value="" disabled>
+                    Your role...
+                  </option>
+                  <option value="teacher">Teacher</option>
+                  <option value="counselor">Counselor</option>
+                  <option value="tech_director">Tech director</option>
+                  <option value="administrator">Administrator</option>
+                </select>
+
+                <input type="hidden" name="resource" value={interestType ?? "email_newsletter"} />
+                <input type="hidden" name="promptType" value={promptType} />
+                <input type="text" name="company" tabIndex={-1} autoComplete="off" className="honeypot" aria-hidden="true" />
+
+                <button type="submit" disabled={state === "loading"} className="btn btn-primary form-submit">
+                  {state === "loading" ? "Submitting..." : "Get free resource + join newsletter"}
+                </button>
+                <p className="consent">No spam. Unsubscribe anytime. We respect your inbox.</p>
+                {message ? <p className={`status ${state}`}>{message}</p> : null}
+
+                {state === "success" && interestType === "ai_resource_toolkit" ? (
+                  <div className="download-links">
+                    {downloads.map((item) => (
+                      <a key={item.href} href={item.href} download>
+                        Download {item.label}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+              </form>
+            ) : null}
+
+            <div className="modal-actions">
+              {step > 1 ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setStep((current) => (current === 3 && interestType !== "ai_resource_toolkit" ? 1 : (current - 1) as 1 | 2 | 3))}
+                >
+                  Back
+                </button>
+              ) : (
+                <span />
+              )}
+
+              {step < 3 ? (
+                <button type="button" className="btn btn-accent" onClick={handleContinue} disabled={step === 1 && !interestType}>
+                  Continue
+                </button>
+              ) : null}
+            </div>
+          </div>
         </div>
-      </div>
-
-      <input type="hidden" name="resource" value={selectedResource} />
-      <input type="text" name="company" tabIndex={-1} autoComplete="off" className="honeypot" aria-hidden="true" />
-
-      <button type="submit" disabled={state === "loading"} className="btn btn-primary form-submit">
-        {state === "loading" ? "Submitting..." : "Get free resource + join newsletter"}
-      </button>
-      <p className="consent">No spam. Unsubscribe anytime. We respect your inbox.</p>
-      {message ? <p className={`status ${state}`}>{message}</p> : null}
-    </form>
+      ) : null}
+    </>
   );
 }
