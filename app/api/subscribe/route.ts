@@ -2,6 +2,36 @@ import { NextRequest, NextResponse } from "next/server";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+type KitErrorResponse = { error?: string; message?: string };
+
+function getKitConfig() {
+  const apiKey = process.env.KIT_API_KEY || process.env.CONVERTKIT_API_KEY || "";
+  const apiSecret = process.env.KIT_API_SECRET || process.env.CONVERTKIT_API_SECRET || "";
+  const formId = process.env.KIT_FORM_ID || process.env.CONVERTKIT_FORM_ID || "";
+  const tagId = process.env.KIT_TAG_ID || process.env.CONVERTKIT_TAG_ID || "";
+
+  return {
+    apiKey,
+    apiSecret,
+    formId: formId.trim(),
+    tagId: tagId.trim()
+  };
+}
+
+async function parseKitError(response: Response) {
+  const text = await response.text();
+  if (!text) {
+    return "Kit request failed.";
+  }
+
+  try {
+    const parsed = JSON.parse(text) as KitErrorResponse;
+    return parsed.message || parsed.error || text;
+  } catch {
+    return text;
+  }
+}
+
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as {
     email?: string;
@@ -31,47 +61,48 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ status: "error", message: "Invalid email address." }, { status: 400 });
   }
 
-  const apiKey = process.env.KIT_API_KEY;
-  const apiSecret = process.env.KIT_API_SECRET;
-  const formId = process.env.KIT_FORM_ID;
-  const tagId = process.env.KIT_TAG_ID;
+  const { apiKey, apiSecret, formId, tagId } = getKitConfig();
 
-  if (!apiKey || !apiSecret || (!formId && !tagId)) {
+  if (!apiKey || (!formId && !tagId)) {
     return NextResponse.json(
       { status: "error", message: "Missing Kit server configuration." },
       { status: 500 }
     );
   }
 
-  const endpoint = "https://api.convertkit.com/v3/subscribers";
   const payload: Record<string, unknown> = {
     api_key: apiKey,
-    api_secret: apiSecret,
     email,
     first_name: name,
-    tags: tagId ? [Number(tagId)] : undefined,
-    form_id: formId ? Number(formId) : undefined,
     fields: { source, role, resource }
   };
 
+  const target = formId
+    ? `https://api.convertkit.com/v3/forms/${formId}/subscribe`
+    : `https://api.convertkit.com/v3/tags/${tagId}/subscribe`;
+
+  if (apiSecret) {
+    payload.api_secret = apiSecret;
+  }
+
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch(target, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
-    const data = (await response.json()) as { message?: string };
     if (response.ok) {
       return NextResponse.json({ status: "ok" }, { status: 200 });
     }
 
-    if (response.status === 422 && data.message?.toLowerCase().includes("already")) {
+    const errorMessage = (await parseKitError(response)).toLowerCase();
+    if (response.status === 422 && errorMessage.includes("already")) {
       return NextResponse.json({ status: "duplicate" }, { status: 409 });
     }
 
     return NextResponse.json(
-      { status: "error", message: data.message ?? "Kit request failed." },
+      { status: "error", message: errorMessage || "Kit request failed." },
       { status: response.status }
     );
   } catch {
