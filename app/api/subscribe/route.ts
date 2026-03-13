@@ -25,8 +25,8 @@ function getMissingKitVars(config: ReturnType<typeof getKitConfig>) {
     missing.push("KIT_API_KEY");
   }
 
-  if (!config.formId && !config.tagId) {
-    missing.push("KIT_FORM_ID|KIT_TAG_ID");
+  if (!config.apiSecret && !config.formId && !config.tagId) {
+    missing.push("KIT_FORM_ID|KIT_TAG_ID|KIT_API_SECRET");
   }
 
   return missing;
@@ -108,7 +108,9 @@ export async function POST(request: NextRequest) {
 
   const target = formId
     ? `https://api.convertkit.com/v3/forms/${formId}/subscribe`
-    : `https://api.convertkit.com/v3/tags/${tagId}/subscribe`;
+    : tagId
+      ? `https://api.convertkit.com/v3/tags/${tagId}/subscribe`
+      : "https://api.convertkit.com/v3/subscribers";
 
   if (apiSecret) {
     payload.api_secret = apiSecret;
