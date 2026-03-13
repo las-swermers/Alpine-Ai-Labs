@@ -303,7 +303,7 @@ input::placeholder {
 }
 
 .resource-card {
-  border: 1px solid #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   background: #f8fafc;
   color: #0f172a;
@@ -371,6 +371,34 @@ input::placeholder {
   border-color: var(--brand-dark);
 }
 
+.btn-secondary {
+  color: var(--brand);
+  border-color: rgba(17, 35, 70, 0.2);
+}
+
+.btn-secondary:hover {
+  border-color: rgba(17, 35, 70, 0.4);
+  background: var(--brand-soft);
+}
+
+.btn-accent,
+.btn-primary {
+  background: var(--brand);
+  color: #ffffff;
+  border-color: var(--brand);
+}
+
+.btn-accent:hover,
+.btn-primary:hover {
+  background: var(--brand-dark);
+  border-color: var(--brand-dark);
+}
+
+.btn-secondary:hover {
+  border-color: rgba(128, 255, 198, 0.55);
+}
+
+.btn-accent,
 .btn-primary {
   width: 100%;
 }
@@ -393,11 +421,11 @@ input::placeholder {
 
 .status.success,
 .status.duplicate {
-  color: #166534;
+  color: #86efac;
 }
 
 .status.error {
-  color: #b91c1c;
+  color: #fca5a5;
 }
 
 .honeypot {
