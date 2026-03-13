@@ -1,6 +1,5 @@
 import { NewsletterForm } from "./components/newsletter-form";
 
-
 const audienceCards = [
   {
     title: "Teachers",
@@ -11,12 +10,12 @@ const audienceCards = [
     body: "AI tools for documentation, resource drafting, and supporting students without overload."
   },
   {
-    title: "Tech directors",
+    title: "Administrators",
     body: "Build in-house AI tools, evaluate platforms, and lead school-wide AI strategy and rollout."
   }
 ];
 
-const offers = [
+const services = [
   {
     tier: "Training",
     title: "Prompt workshops",
@@ -41,11 +40,6 @@ const offers = [
     tier: "Custom",
     title: "In-house app builds",
     body: "Custom AI-powered tools specific to your school’s workflows, privacy standards, and student needs."
-  },
-  {
-    tier: "Custom",
-    title: "School AI strategy",
-    body: "Leadership consulting to build AI policy, adoption roadmaps, and practical staff training plans."
   }
 ];
 
@@ -68,7 +62,9 @@ export default function HomePage() {
 
       <section className="hero" id="signup">
         <p className="pill">Built by educators for educators</p>
-        <h1>AI training for schools — without the overwhelm</h1>
+        <h1>
+          AI training for schools <span>without the overwhelm</span>
+        </h1>
         <p className="lead">
           Practical workshops, webinars, and tools built by a counselor, a teacher, and a tech director
           who work in schools every day.
@@ -86,6 +82,19 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section id="services" className="services-strip">
+        <p className="eyebrow">What we offer</p>
+        <h2>Practical services for real school teams</h2>
+        <div className="service-grid">
+          {services.map((service) => (
+            <article className="offer-card" key={service.title}>
+              <span className="tier">{service.tier}</span>
+              <h3>{service.title}</h3>
+              <p>{service.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section id="audience">
         <p className="eyebrow">Who we help</p>
@@ -99,21 +108,6 @@ export default function HomePage() {
             <article className="panel" key={card.title}>
               <h3>{card.title}</h3>
               <p>{card.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="services" className="services-section">
-        <p className="eyebrow">What we offer</p>
-        <h2>From prompting basics to custom tools</h2>
-        <p className="section-copy">A full spectrum of AI training — start free, go deeper when you’re ready.</p>
-        <div className="three-grid">
-          {offers.map((offer) => (
-            <article className="offer-card" key={offer.title}>
-              <span className="tier">{offer.tier}</span>
-              <h3>{offer.title}</h3>
-              <p>{offer.body}</p>
             </article>
           ))}
         </div>
