@@ -13,8 +13,13 @@ Mission statement  Practical AI training and consulting for K-12 educators, coun
    ```bash
    cp .env.example .env.local
    ```
-3. Add Kit credentials to `.env.local` (`KIT_API_KEY`, `KIT_API_SECRET`, and either `KIT_FORM_ID` or `KIT_TAG_ID`).
+3. Add Kit credentials to `.env.local` (`KIT_API_KEY` and either `KIT_FORM_ID` or `KIT_TAG_ID`). `KIT_API_SECRET` is optional. Legacy `CONVERTKIT_*` variable names are also supported.
 4. Run the app:
    ```bash
    npm run dev
    ```
+
+
+## Downloadable resources
+- Files served from `public/ai-download-docs/` are linked in the popup toolkit flow.
+- Replace the placeholder `.txt` files with your final PDFs/docs while keeping filenames stable, or update the links in `app/components/newsletter-form.tsx`.
