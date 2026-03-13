@@ -304,11 +304,30 @@ h2 {
   padding: 24px 6px;
 }
 
-.service-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.service-carousel {
+  display: flex;
   gap: 12px;
   margin-top: 14px;
+  overflow-x: auto;
+  padding: 4px 2px 12px;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+
+.service-carousel::-webkit-scrollbar {
+  height: 8px;
+}
+
+.service-carousel::-webkit-scrollbar-thumb {
+  background: rgba(17, 35, 70, 0.22);
+  border-radius: 999px;
+}
+
+.service-slide {
+  flex: 0 0 min(320px, 84vw);
+  scroll-snap-align: start;
 }
 
 .three-grid {
@@ -368,9 +387,14 @@ h2 {
   color: #475569;
 }
 
+
+@media (min-width: 1024px) {
+  .service-slide {
+    flex-basis: calc((100% - 24px) / 3);
+  }
+}
 @media (max-width: 900px) {
-  .three-grid,
-  .service-grid {
+  .three-grid {
     grid-template-columns: 1fr;
   }
 

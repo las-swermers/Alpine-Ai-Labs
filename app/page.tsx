@@ -85,9 +85,9 @@ export default function HomePage() {
       <section id="services" className="services-strip">
         <p className="eyebrow">What we offer</p>
         <h2>Practical services for real school teams</h2>
-        <div className="service-grid">
+        <div className="service-carousel" aria-label="Services carousel">
           {services.map((service) => (
-            <article className="offer-card" key={service.title}>
+            <article className="offer-card service-slide" key={service.title}>
               <span className="tier">{service.tier}</span>
               <h3>{service.title}</h3>
               <p>{service.body}</p>
