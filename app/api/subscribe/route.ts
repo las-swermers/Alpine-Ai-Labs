@@ -6,6 +6,10 @@ export async function POST(request: NextRequest) {
   const body = (await request.json()) as {
     email?: string;
     name?: string;
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    resource?: string;
     source?: string;
     company?: string;
   };
@@ -15,8 +19,13 @@ export async function POST(request: NextRequest) {
   }
 
   const email = body.email?.trim().toLowerCase() ?? "";
-  const name = body.name?.trim() ?? "";
+  const firstName = body.firstName?.trim() ?? "";
+  const lastName = body.lastName?.trim() ?? "";
+  const fallbackName = body.name?.trim() ?? "";
+  const name = `${firstName} ${lastName}`.trim() || fallbackName;
   const source = body.source?.trim() || "website";
+  const role = body.role?.trim() || "unknown";
+  const resource = body.resource?.trim() || "none_selected";
 
   if (!EMAIL_REGEX.test(email)) {
     return NextResponse.json({ status: "error", message: "Invalid email address." }, { status: 400 });
@@ -42,7 +51,7 @@ export async function POST(request: NextRequest) {
     first_name: name,
     tags: tagId ? [Number(tagId)] : undefined,
     form_id: formId ? Number(formId) : undefined,
-    fields: { source }
+    fields: { source, role, resource }
   };
 
   try {
