@@ -462,6 +462,62 @@ h2 {
   padding: 24px 6px;
 }
 
+.references-strip {
+  margin: 8px 0 26px;
+  border-top: 1px solid var(--line);
+  padding: 24px 6px 10px;
+}
+
+.reference-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.reference-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.reference-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.reference-topline a {
+  font-weight: 700;
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.reference-topline a:hover {
+  text-decoration: underline;
+}
+
+.reference-card p {
+  margin: 0;
+  color: #475569;
+}
+
+.reference-card strong {
+  color: #0f172a;
+}
+
+.reference-card ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #475569;
+  display: grid;
+  gap: 6px;
+}
+
 .service-carousel {
   display: flex;
   gap: 12px;
@@ -553,6 +609,10 @@ h2 {
 }
 @media (max-width: 900px) {
   .three-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reference-grid {
     grid-template-columns: 1fr;
   }
 
