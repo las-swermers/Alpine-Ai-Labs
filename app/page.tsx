@@ -44,6 +44,32 @@ const services = [
   }
 ];
 
+const immersiveReferences = [
+  {
+    site: "React Three Fiber",
+    href: "https://r3f.docs.pmnd.rs/",
+    highlight: "Run a real Three.js scene directly inside React components.",
+    takeaway: "Best foundation for the cinematic monitor + camera choreography.",
+    extract: ["Scene composition", "Camera control", "React component workflow"]
+  },
+  {
+    site: "GSAP ScrollTrigger",
+    href: "https://gsap.com/docs/v3/Plugins/ScrollTrigger/",
+    highlight: "Maps exact scroll position to animation progress for scrubbed timelines.",
+    takeaway: "Lets us lock camera motion to scroll without drift or desync.",
+    extract: ["Scrubbed timelines", "Section pinning", "Progress callbacks"]
+  },
+  {
+    site: "drei RenderTexture",
+    href: "https://github.com/pmndrs/drei",
+    highlight: "Renders a second React scene onto a mesh material in real time.",
+    takeaway: "Enables the monitor " +
+      "screen-within-a-screen" +
+      " handoff before fading into normal HTML.",
+    extract: ["Live screen texture", "Scene-in-scene rendering", "Seamless DOM handoff"]
+  }
+];
+
 export default function HomePage() {
   const newsletterSignupHref = "#newsletter-signup";
   const externalKitSignupHref = process.env.NEXT_PUBLIC_KIT_COLLECTION_URL?.trim() || "";
@@ -107,6 +133,35 @@ export default function HomePage() {
             <article className="panel" key={card.title}>
               <h3>{card.title}</h3>
               <p>{card.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="immersive-proof" className="references-strip">
+        <p className="eyebrow">Build confidence</p>
+        <h2>Can we build the cinematic scroll experience? Yes.</h2>
+        <p className="section-copy">
+          We can ship this in phases by borrowing proven patterns from the ecosystem below, then adapting
+          them to Alpine AI Labs branding, performance targets, and accessibility requirements.
+        </p>
+
+        <div className="reference-grid" aria-label="Technical references for immersive landing experience">
+          {immersiveReferences.map((reference) => (
+            <article className="reference-card" key={reference.site}>
+              <div className="reference-topline">
+                <span className="tier">Reference</span>
+                <a href={reference.href} target="_blank" rel="noreferrer">
+                  {reference.site}
+                </a>
+              </div>
+              <p>{reference.highlight}</p>
+              <strong>{reference.takeaway}</strong>
+              <ul>
+                {reference.extract.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
             </article>
           ))}
         </div>
