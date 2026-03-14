@@ -16,23 +16,23 @@ type PromptType =
 const interestOptions: Array<{ id: InterestType; label: string; helper: string }> = [
   {
     id: "next_webinar_input",
-    label: "Receive input on the next webinar",
-    helper: "Share what you want covered and get invited first."
+    label: "Help shape our next webinar",
+    helper: "Tell us what your team needs, then get first access to register."
   },
   {
     id: "in_person_workshops",
-    label: "Just in-person workshops coming up",
-    helper: "Only hear about upcoming onsite training sessions."
+    label: "Only in-person workshop updates",
+    helper: "Get alerts for onsite training dates and locations only."
   },
   {
     id: "ai_resource_toolkit",
-    label: "AI resource toolkit",
-    helper: "Choose prompt packs and download resources right away."
+    label: "Download AI resource toolkits",
+    helper: "Pick role-specific prompt packs and download them instantly."
   },
   {
     id: "email_newsletter",
-    label: "Just email newsletter",
-    helper: "Weekly practical updates, no extra event notices."
+    label: "Weekly AI newsletter only",
+    helper: "Receive practical school AI tips without event emails."
   }
 ];
 
@@ -161,7 +161,8 @@ export function NewsletterForm() {
       resource: interestType ?? "email_newsletter",
       promptType,
       source: "landing_popup",
-      company: String(formData.get("company") ?? "")
+      company: String(formData.get("company") ?? ""),
+      webinarIdeas: String(formData.get("webinarIdeas") ?? "").trim()
     };
 
     try {
@@ -218,14 +219,14 @@ export function NewsletterForm() {
             <div className="modal-header">
               <div>
                 <p className="eyebrow">Alpine AI Labs</p>
-                <h3>Choose what you want from us</h3>
+                <h3>Choose the updates and resources you want</h3>
               </div>
               <button type="button" className="modal-close" onClick={closeModal} aria-label="Close popup">
                 ×
               </button>
             </div>
 
-            <p className="modal-step">Step {step} of 3</p>
+            <p className="modal-step">Step {step} of 3 · Pick your best-fit option</p>
 
             {step === 1 ? (
               <div className="option-grid">
@@ -307,12 +308,21 @@ export function NewsletterForm() {
                   <option value="administrator">Administrator</option>
                 </select>
 
+                {interestType === "next_webinar_input" ? (
+                  <textarea
+                    id="webinarIdeas"
+                    name="webinarIdeas"
+                    placeholder="What topics, challenges, or tools should we cover in the next webinar?"
+                    rows={4}
+                  />
+                ) : null}
+
                 <input type="hidden" name="resource" value={interestType ?? "email_newsletter"} />
                 <input type="hidden" name="promptType" value={promptType} />
                 <input type="text" name="company" tabIndex={-1} autoComplete="off" className="honeypot" aria-hidden="true" />
 
                 <button type="submit" disabled={state === "loading"} className="btn btn-primary form-submit">
-                  {state === "loading" ? "Submitting..." : "Get free resource + join newsletter"}
+                  {state === "loading" ? "Submitting..." : "Get your selection"}
                 </button>
                 <p className="consent">No spam. Unsubscribe anytime. We respect your inbox.</p>
                 {message ? <p className={`status ${state}`}>{message}</p> : null}
