@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
     source?: string;
     company?: string;
     promptType?: string;
+    webinarIdeas?: string;
   };
 
   try {
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
   const role = body.role?.trim() || "unknown";
   const resource = body.resource?.trim() || "none_selected";
   const promptType = body.promptType?.trim() || "none_selected";
+  const webinarIdeas = body.webinarIdeas?.trim() || "";
 
   if (!EMAIL_REGEX.test(email)) {
     return NextResponse.json({ status: "error", message: "Invalid email address." }, { status: 400 });
@@ -104,7 +106,13 @@ export async function POST(request: NextRequest) {
     email,
     first_name: firstName || fullName,
     ...(lastName ? { last_name: lastName } : {}),
-    fields: { source, role, resource, prompt_type: promptType }
+    fields: {
+      source,
+      role,
+      resource,
+      prompt_type: promptType,
+      ...(webinarIdeas ? { webinar_ideas: webinarIdeas } : {})
+    }
   };
 
   const target = formId

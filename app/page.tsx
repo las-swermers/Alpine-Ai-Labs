@@ -56,11 +56,11 @@ export default function HomePage() {
           <span>Alpine AI Labs</span>
         </div>
         <nav className="nav-links">
-          <a href="#services">Workshops</a>
-          <a href="#audience">For schools</a>
+          <a href="#services">Explore training options</a>
+          <a href="#audience">Find your school role</a>
         </nav>
         <a className="btn btn-secondary" href={newsletterSignupHref}>
-          Join the newsletter
+          Get AI tips in your inbox
         </a>
       </header>
 
@@ -76,7 +76,7 @@ export default function HomePage() {
         <div className="cta-row">
           <NewsletterForm />
           <a className="btn btn-secondary" href="#services">
-            Explore workshops
+            Compare services
           </a>
         </div>
       </section>
@@ -116,11 +116,11 @@ export default function HomePage() {
         <h2>Ready to bring AI into your school?</h2>
         <p>Join our newsletter for live tips, tools, and workshop announcements.</p>
         <a className="btn btn-accent" href={newsletterSignupHref}>
-          Get started free
+          Start with free AI updates
         </a>
         {externalKitSignupHref ? (
           <a className="btn btn-secondary" href={externalKitSignupHref} target="_blank" rel="noreferrer">
-            Open Kit signup page
+            Choose your best-fit starter kit
           </a>
         ) : null}
       </section>
