@@ -1,20 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type KitErrorResponse = { error?: string; message?: string };
 
+function normalizeEnvValue(value?: string) {
+  const normalized = (value || "").trim();
+  if (!normalized) {
+    return "";
+  }
+
+  const lowered = normalized.toLowerCase();
+  if (lowered === "undefined" || lowered === "null" || lowered === "none") {
+    return "";
+  }
+
+  return normalized;
+}
+
 function getKitConfig() {
-  const apiKey = (process.env.KIT_API_KEY || process.env.CONVERTKIT_API_KEY || "").trim();
-  const apiSecret = (process.env.KIT_API_SECRET || process.env.CONVERTKIT_API_SECRET || "").trim();
-  const formId = process.env.KIT_FORM_ID || process.env.CONVERTKIT_FORM_ID || "";
-  const tagId = process.env.KIT_TAG_ID || process.env.CONVERTKIT_TAG_ID || "";
+  const apiKey = normalizeEnvValue(process.env.KIT_API_KEY || process.env.CONVERTKIT_API_KEY);
+  const apiSecret = normalizeEnvValue(process.env.KIT_API_SECRET || process.env.CONVERTKIT_API_SECRET);
+  const formId = normalizeEnvValue(process.env.KIT_FORM_ID || process.env.CONVERTKIT_FORM_ID);
+  const tagId = normalizeEnvValue(process.env.KIT_TAG_ID || process.env.CONVERTKIT_TAG_ID);
 
   return {
     apiKey,
     apiSecret,
-    formId: formId.trim(),
-    tagId: tagId.trim()
+    formId,
+    tagId
   };
 }
 
@@ -22,11 +39,13 @@ function getMissingKitVars(config: ReturnType<typeof getKitConfig>) {
   const missing: string[] = [];
 
   const hasFormOrTag = Boolean(config.formId || config.tagId);
-  if (hasFormOrTag && !config.apiKey) {
+  const canFallbackToSecret = Boolean(config.apiSecret);
+
+  if (hasFormOrTag && !config.apiKey && !canFallbackToSecret) {
     missing.push("KIT_API_KEY");
   }
 
-  if (!hasFormOrTag && !config.apiSecret) {
+  if (!hasFormOrTag && !canFallbackToSecret) {
     missing.push("KIT_FORM_ID|KIT_TAG_ID|KIT_API_SECRET");
   }
 
@@ -115,13 +134,15 @@ export async function POST(request: NextRequest) {
     }
   };
 
-  const target = formId
+  const shouldUseFormOrTag = Boolean((formId || tagId) && apiKey);
+
+  const target = shouldUseFormOrTag && formId
     ? `https://api.convertkit.com/v3/forms/${formId}/subscribe`
-    : tagId
+    : shouldUseFormOrTag && tagId
       ? `https://api.convertkit.com/v3/tags/${tagId}/subscribe`
       : "https://api.convertkit.com/v3/subscribers";
 
-  if (formId || tagId) {
+  if (shouldUseFormOrTag) {
     payload.api_key = apiKey;
   }
 
@@ -155,4 +176,14 @@ export async function POST(request: NextRequest) {
       { status: 502 }
     );
   }
+}
+
+export async function GET() {
+  return NextResponse.json(
+    {
+      status: "ok",
+      message: "Subscribe endpoint is available. Send a POST request with JSON payload to subscribe."
+    },
+    { status: 200 }
+  );
 }
