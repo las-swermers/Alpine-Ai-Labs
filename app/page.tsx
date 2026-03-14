@@ -1,6 +1,5 @@
 import { NewsletterForm } from "./components/newsletter-form";
 
-
 const audienceCards = [
   {
     title: "Teachers",
@@ -44,29 +43,25 @@ const services = [
   }
 ];
 
-const immersiveReferences = [
+const immersiveFeatures = [
   {
-    site: "React Three Fiber",
-    href: "https://r3f.docs.pmnd.rs/",
-    highlight: "Run a real Three.js scene directly inside React components.",
-    takeaway: "Best foundation for the cinematic monitor + camera choreography.",
-    extract: ["Scene composition", "Camera control", "React component workflow"]
+    title: "Neural architecture",
+    body: "Cinematic hero experience that transitions from immersive visuals into fully accessible HTML.",
+    detail: "> CAMERA_SYNC_READY_"
   },
   {
-    site: "GSAP ScrollTrigger",
-    href: "https://gsap.com/docs/v3/Plugins/ScrollTrigger/",
-    highlight: "Maps exact scroll position to animation progress for scrubbed timelines.",
-    takeaway: "Lets us lock camera motion to scroll without drift or desync.",
-    extract: ["Scrubbed timelines", "Section pinning", "Progress callbacks"]
+    title: "Ultra-low latency",
+    body: "Scroll-linked animation patterns tuned for smooth interaction and fast runtime delivery.",
+    stat: "12ms"
   },
   {
-    site: "drei RenderTexture",
-    href: "https://github.com/pmndrs/drei",
-    highlight: "Renders a second React scene onto a mesh material in real time.",
-    takeaway: "Enables the monitor " +
-      "screen-within-a-screen" +
-      " handoff before fading into normal HTML.",
-    extract: ["Live screen texture", "Scene-in-scene rendering", "Seamless DOM handoff"]
+    title: "Enterprise security",
+    body: "Performance and accessibility guardrails to keep launch quality high while visuals stay premium."
+  },
+  {
+    title: "Drop-in implementation",
+    body: "Ship in phases: prototype visuals first, then harden with analytics, SEO, and conversion layers.",
+    cta: "View rollout plan"
   }
 ];
 
@@ -84,6 +79,7 @@ export default function HomePage() {
         <nav className="nav-links">
           <a href="#services">Explore training options</a>
           <a href="#audience">Find your school role</a>
+          <a href="#experience">See the immersive concept</a>
         </nav>
         <a className="btn btn-secondary" href={newsletterSignupHref}>
           Get AI tips in your inbox
@@ -104,6 +100,44 @@ export default function HomePage() {
           <a className="btn btn-secondary" href="#services">
             Compare services
           </a>
+        </div>
+      </section>
+
+      <section id="experience" className="bento-strip">
+        <p className="eyebrow">Immersive concept preview</p>
+        <h2>Designed to feel cinematic, then hand off to usable content</h2>
+        <p className="section-copy">
+          This layout mirrors the premium bento direction you shared: dark glass cards, asymmetric grid sizing,
+          subtle glows, and concise product-style messaging.
+        </p>
+
+        <div className="bento-grid" aria-label="Immersive feature highlights">
+          <article className="bento-card bento-card-large">
+            <div>
+              <h3>{immersiveFeatures[0].title}</h3>
+              <p>{immersiveFeatures[0].body}</p>
+            </div>
+            <div className="terminal-chip">{immersiveFeatures[0].detail}</div>
+          </article>
+
+          <article className="bento-card">
+            <h3>{immersiveFeatures[1].title}</h3>
+            <p>{immersiveFeatures[1].body}</p>
+            <div className="bento-stat">{immersiveFeatures[1].stat}</div>
+          </article>
+
+          <article className="bento-card">
+            <h3>{immersiveFeatures[2].title}</h3>
+            <p>{immersiveFeatures[2].body}</p>
+          </article>
+
+          <article className="bento-card bento-card-wide">
+            <div>
+              <h3>{immersiveFeatures[3].title}</h3>
+              <p>{immersiveFeatures[3].body}</p>
+            </div>
+            <button type="button" className="btn bento-button">{immersiveFeatures[3].cta}</button>
+          </article>
         </div>
       </section>
 
@@ -133,35 +167,6 @@ export default function HomePage() {
             <article className="panel" key={card.title}>
               <h3>{card.title}</h3>
               <p>{card.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="immersive-proof" className="references-strip">
-        <p className="eyebrow">Build confidence</p>
-        <h2>Can we build the cinematic scroll experience? Yes.</h2>
-        <p className="section-copy">
-          We can ship this in phases by borrowing proven patterns from the ecosystem below, then adapting
-          them to Alpine AI Labs branding, performance targets, and accessibility requirements.
-        </p>
-
-        <div className="reference-grid" aria-label="Technical references for immersive landing experience">
-          {immersiveReferences.map((reference) => (
-            <article className="reference-card" key={reference.site}>
-              <div className="reference-topline">
-                <span className="tier">Reference</span>
-                <a href={reference.href} target="_blank" rel="noreferrer">
-                  {reference.site}
-                </a>
-              </div>
-              <p>{reference.highlight}</p>
-              <strong>{reference.takeaway}</strong>
-              <ul>
-                {reference.extract.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
             </article>
           ))}
         </div>
