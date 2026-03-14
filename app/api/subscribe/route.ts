@@ -21,11 +21,12 @@ function getKitConfig() {
 function getMissingKitVars(config: ReturnType<typeof getKitConfig>) {
   const missing: string[] = [];
 
-  if (!config.apiKey) {
+  const hasFormOrTag = Boolean(config.formId || config.tagId);
+  if (hasFormOrTag && !config.apiKey) {
     missing.push("KIT_API_KEY");
   }
 
-  if (!config.apiSecret && !config.formId && !config.tagId) {
+  if (!hasFormOrTag && !config.apiSecret) {
     missing.push("KIT_FORM_ID|KIT_TAG_ID|KIT_API_SECRET");
   }
 
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
   const firstName = body.firstName?.trim() ?? "";
   const lastName = body.lastName?.trim() ?? "";
   const fallbackName = body.name?.trim() ?? "";
-  const name = `${firstName} ${lastName}`.trim() || fallbackName;
+  const fullName = `${firstName} ${lastName}`.trim() || fallbackName;
   const source = body.source?.trim() || "website";
   const role = body.role?.trim() || "unknown";
   const resource = body.resource?.trim() || "none_selected";
@@ -100,9 +101,9 @@ export async function POST(request: NextRequest) {
   }
 
   const payload: Record<string, unknown> = {
-    api_key: apiKey,
     email,
-    first_name: name,
+    first_name: firstName || fullName,
+    ...(lastName ? { last_name: lastName } : {}),
     fields: { source, role, resource, prompt_type: promptType }
   };
 
@@ -111,6 +112,10 @@ export async function POST(request: NextRequest) {
     : tagId
       ? `https://api.convertkit.com/v3/tags/${tagId}/subscribe`
       : "https://api.convertkit.com/v3/subscribers";
+
+  if (formId || tagId) {
+    payload.api_key = apiKey;
+  }
 
   if (apiSecret) {
     payload.api_secret = apiSecret;
