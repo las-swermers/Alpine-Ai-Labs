@@ -13,29 +13,9 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  *
  * Environment variable: GOOGLE_SHEETS_SUBSCRIBE_URL
  *
- * Google Sheets setup:
- * 1. Create a sheet with columns: Timestamp, Email, Name, Role, Resource, Prompt Type, Source
- * 2. Extensions > Apps Script, paste:
- *
- *    function doPost(e) {
- *      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
- *      var data = JSON.parse(e.postData.contents);
- *      sheet.appendRow([
- *        new Date().toISOString(),
- *        data.email || "",
- *        data.name || "",
- *        data.role || "",
- *        data.resource || "",
- *        data.promptType || "",
- *        data.source || ""
- *      ]);
- *      return ContentService
- *        .createTextOutput(JSON.stringify({ status: "ok" }))
- *        .setMimeType(ContentService.MimeType.JSON);
- *    }
- *
- * 3. Deploy > New deployment > Web app > Execute as "Me", access "Anyone"
- * 4. Copy the URL and set it as GOOGLE_SHEETS_SUBSCRIBE_URL in Vercel
+ * The request to Google Sheets is fire-and-forget — we return success
+ * immediately after validation so the user gets instant feedback and
+ * downloads. The Google Sheets write happens in the background.
  */
 export async function POST(request: NextRequest) {
   let body: {
@@ -83,44 +63,25 @@ export async function POST(request: NextRequest) {
 
   const sheetsUrl = (process.env.GOOGLE_SHEETS_SUBSCRIBE_URL || "").trim();
 
-  if (!sheetsUrl) {
-    console.log("[subscribe] No GOOGLE_SHEETS_SUBSCRIBE_URL configured. Signup:", {
-      email, name, role, resource, promptType, source,
-      timestamp: new Date().toISOString(),
-    });
-    return NextResponse.json({ status: "ok" }, { status: 200 });
-  }
-
-  try {
-    const response = await fetch(sheetsUrl, {
+  if (sheetsUrl) {
+    // Fire and forget — don't await the response
+    fetch(sheetsUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, name, role, resource, promptType, source }),
       redirect: "follow",
+    }).catch((err) => {
+      console.error("[subscribe] Google Sheets write failed:", err);
     });
-
-    if (response.ok || response.status === 302) {
-      return NextResponse.json({ status: "ok" }, { status: 200 });
-    }
-
-    const text = await response.text();
-    console.error("[subscribe] Google Sheets error:", response.status, text.slice(0, 500));
-
-    if (response.status >= 300 && response.status < 400) {
-      return NextResponse.json({ status: "ok" }, { status: 200 });
-    }
-
-    return NextResponse.json(
-      { status: "error", message: "Could not save your signup. Please try again." },
-      { status: 502 }
-    );
-  } catch (err) {
-    console.error("[subscribe] Fetch error:", err);
-    return NextResponse.json(
-      { status: "error", message: "Connection issue. Please try again." },
-      { status: 502 }
-    );
+  } else {
+    console.log("[subscribe] No GOOGLE_SHEETS_SUBSCRIBE_URL configured. Signup:", {
+      email, name, role, resource, promptType, source,
+      timestamp: new Date().toISOString(),
+    });
   }
+
+  // Return success immediately — data write happens in background
+  return NextResponse.json({ status: "ok" }, { status: 200 });
 }
 
 export async function GET() {
