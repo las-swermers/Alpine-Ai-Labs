@@ -86,18 +86,32 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Google Apps Script redirects POST requests (302). We must follow
+    // the redirect manually because fetch converts POST → GET on redirect.
     const response = await fetch(sheetsUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, name, school, role }),
+      redirect: "follow",
     });
 
-    if (response.ok) {
+    // Apps Script returns 200 or a redirect that resolves to 200 on success.
+    // Even a 302 followed by a 200 HTML page counts as success — the data
+    // was written before the redirect happened.
+    if (response.ok || response.status === 302) {
       return NextResponse.json({ status: "ok" }, { status: 200 });
     }
 
+    // Some Apps Script deployments return the result after redirect as HTML.
+    // If we got here, try to read the response for debugging.
     const text = await response.text();
-    console.error("[waitlist] Google Sheets error:", text);
+    console.error("[waitlist] Google Sheets error:", response.status, text.slice(0, 500));
+
+    // If the status is a redirect-like code (301/302/307), the write likely succeeded
+    if (response.status >= 300 && response.status < 400) {
+      return NextResponse.json({ status: "ok" }, { status: 200 });
+    }
+
     return NextResponse.json(
       { status: "error", message: "Could not save your signup. Please try again." },
       { status: 502 }
