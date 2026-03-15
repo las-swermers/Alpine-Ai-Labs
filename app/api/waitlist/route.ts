@@ -8,32 +8,11 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /**
  * POST /api/waitlist
  *
- * Collects product waitlist signups and forwards them to a Google Sheets
- * Apps Script web app. The Apps Script URL is stored in the environment
- * variable GOOGLE_SHEETS_WAITLIST_URL.
+ * Collects Beacon product waitlist signups and forwards them to a
+ * Google Sheets Apps Script web app. Fire-and-forget pattern —
+ * returns success immediately after validation.
  *
- * To set up the Google Sheets side:
- * 1. Create a Google Sheet with columns: Timestamp, Email, Name, School, Role
- * 2. Go to Extensions > Apps Script
- * 3. Paste this script:
- *
- *    function doPost(e) {
- *      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
- *      var data = JSON.parse(e.postData.contents);
- *      sheet.appendRow([
- *        new Date().toISOString(),
- *        data.email || "",
- *        data.name || "",
- *        data.school || "",
- *        data.role || ""
- *      ]);
- *      return ContentService
- *        .createTextOutput(JSON.stringify({ status: "ok" }))
- *        .setMimeType(ContentService.MimeType.JSON);
- *    }
- *
- * 4. Deploy > New deployment > Web app > Execute as "Me", access "Anyone"
- * 5. Copy the URL and set it as GOOGLE_SHEETS_WAITLIST_URL in your .env
+ * Environment variable: GOOGLE_SHEETS_WAITLIST_URL
  */
 export async function POST(request: NextRequest) {
   let body: {
@@ -72,57 +51,25 @@ export async function POST(request: NextRequest) {
 
   const sheetsUrl = (process.env.GOOGLE_SHEETS_WAITLIST_URL || "").trim();
 
-  if (!sheetsUrl) {
-    // If no Google Sheets URL is configured, log to console and still return success
-    // so the UI works during development
-    console.log("[waitlist] No GOOGLE_SHEETS_WAITLIST_URL configured. Signup:", {
-      email,
-      name,
-      school,
-      role,
-      timestamp: new Date().toISOString(),
-    });
-    return NextResponse.json({ status: "ok" }, { status: 200 });
-  }
-
-  try {
-    // Google Apps Script redirects POST requests (302). We must follow
-    // the redirect manually because fetch converts POST → GET on redirect.
-    const response = await fetch(sheetsUrl, {
+  if (sheetsUrl) {
+    // Fire and forget — don't await the response
+    fetch(sheetsUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, name, school, role }),
       redirect: "follow",
+    }).catch((err) => {
+      console.error("[waitlist] Google Sheets write failed:", err);
     });
-
-    // Apps Script returns 200 or a redirect that resolves to 200 on success.
-    // Even a 302 followed by a 200 HTML page counts as success — the data
-    // was written before the redirect happened.
-    if (response.ok || response.status === 302) {
-      return NextResponse.json({ status: "ok" }, { status: 200 });
-    }
-
-    // Some Apps Script deployments return the result after redirect as HTML.
-    // If we got here, try to read the response for debugging.
-    const text = await response.text();
-    console.error("[waitlist] Google Sheets error:", response.status, text.slice(0, 500));
-
-    // If the status is a redirect-like code (301/302/307), the write likely succeeded
-    if (response.status >= 300 && response.status < 400) {
-      return NextResponse.json({ status: "ok" }, { status: 200 });
-    }
-
-    return NextResponse.json(
-      { status: "error", message: "Could not save your signup. Please try again." },
-      { status: 502 }
-    );
-  } catch (err) {
-    console.error("[waitlist] Fetch error:", err);
-    return NextResponse.json(
-      { status: "error", message: "Connection issue. Please try again." },
-      { status: 502 }
-    );
+  } else {
+    console.log("[waitlist] No GOOGLE_SHEETS_WAITLIST_URL configured. Signup:", {
+      email, name, school, role,
+      timestamp: new Date().toISOString(),
+    });
   }
+
+  // Return success immediately — data write happens in background
+  return NextResponse.json({ status: "ok" }, { status: 200 });
 }
 
 export async function GET() {
