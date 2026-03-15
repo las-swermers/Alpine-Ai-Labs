@@ -37,7 +37,7 @@ function Reveal({ children, delay = 0, className = "", style = {} }: { children:
   return <div ref={ref} className={className} style={{ ...style, opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(30px)", transition: `opacity 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s` }}>{children}</div>;
 }
 
-function Nav() {
+function Nav({ onGetStarted }: { onGetStarted: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => { const fn = () => setScrolled(window.scrollY > 40); window.addEventListener("scroll", fn); return () => window.removeEventListener("scroll", fn); }, []);
   return (
@@ -53,8 +53,8 @@ function Nav() {
           <a key={l} href={href} style={{ color: C.slate, fontSize: 14, textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
             onMouseEnter={(e) => ((e.target as HTMLElement).style.color = C.navy)} onMouseLeave={(e) => ((e.target as HTMLElement).style.color = C.slate)}>{l}</a>
         ))}
-        <a href="#newsletter" style={{ background: C.navy, color: C.white, borderRadius: 24, padding: "8px 20px", fontSize: 13, fontWeight: 600, textDecoration: "none", transition: "all 0.25s ease", display: "inline-block" }}
-          onMouseEnter={(e) => { (e.target as HTMLElement).style.background = C.mint; }} onMouseLeave={(e) => { (e.target as HTMLElement).style.background = C.navy; }}>Get Started</a>
+        <button onClick={onGetStarted} style={{ background: C.navy, color: C.white, borderRadius: 24, padding: "8px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", transition: "all 0.25s ease" }}
+          onMouseEnter={(e) => { (e.target as HTMLElement).style.background = C.mint; }} onMouseLeave={(e) => { (e.target as HTMLElement).style.background = C.navy; }}>Get Started</button>
       </div>
     </nav>
   );
@@ -93,10 +93,81 @@ function WhyCard({ item, delay }: { item: { num: string; title: string; desc: st
     </Reveal>
   );
 }
+// ─── Newsletter Modal Types ───
+type FormState = "idle" | "loading" | "success" | "duplicate" | "error";
+type InterestType = "next_webinar_input" | "in_person_workshops" | "ai_resource_toolkit" | "email_newsletter";
+type PromptType = "teachers_prompt_pack" | "counselors_prompt_kit" | "group_project_generator" | "iep_accommodation_assistant" | "admin_tech_starter_pack" | "student_facing_prompt_pack" | "alpine_ai_tools_guide";
+
+const interestOptions: { id: InterestType; label: string; helper: string }[] = [
+  { id: "next_webinar_input", label: "Help shape our next webinar", helper: "Tell us what your team needs, then get first access to register." },
+  { id: "in_person_workshops", label: "Only in-person workshop updates", helper: "Get alerts for onsite training dates and locations only." },
+  { id: "ai_resource_toolkit", label: "Download AI resource toolkits", helper: "Pick role-specific prompt packs and download them instantly." },
+  { id: "email_newsletter", label: "Weekly AI newsletter only", helper: "Receive practical school AI tips without event emails." },
+];
+
+const promptOptions: { id: PromptType; label: string; helper: string }[] = [
+  { id: "teachers_prompt_pack", label: "Teacher\u2019s AI Prompt Pack", helper: "Lesson planning and feedback prompts." },
+  { id: "counselors_prompt_kit", label: "Counselor\u2019s AI Prompt Kit", helper: "Student support and documentation prompts." },
+  { id: "group_project_generator", label: "Group Project Generator", helper: "Team activity scaffolds and rubrics." },
+  { id: "iep_accommodation_assistant", label: "IEP & Accommodation Assistant", helper: "Support plans and differentiated instruction prompts." },
+  { id: "admin_tech_starter_pack", label: "Admin & Tech Director Starter Pack", helper: "Policy, rollout, and implementation prompts." },
+  { id: "student_facing_prompt_pack", label: "Student-Facing Prompt Pack", helper: "Age-appropriate prompts students can use directly." },
+  { id: "alpine_ai_tools_guide", label: "Alpine AI Tools Guide", helper: "Quick tool overview for school workflows." },
+];
+
+const promptDownloads: Record<PromptType, { label: string; href: string }[]> = {
+  teachers_prompt_pack: [{ label: "Teacher\u2019s AI Prompt Pack", href: "/ai-download-docs/teachers-ai-prompt-pack.txt" }, { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }],
+  counselors_prompt_kit: [{ label: "Counselor\u2019s AI Prompt Kit", href: "/ai-download-docs/counselors-ai-prompt-kit.txt" }, { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }],
+  group_project_generator: [{ label: "Group Project Generator", href: "/ai-download-docs/group-project-generator.txt" }, { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }],
+  iep_accommodation_assistant: [{ label: "IEP & Accommodation Assistant", href: "/ai-download-docs/iep-and-accommodation-assistant.txt" }, { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }],
+  admin_tech_starter_pack: [{ label: "Admin & Tech Director Starter Pack", href: "/ai-download-docs/admin-tech-director-starter-pack.txt" }, { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }],
+  student_facing_prompt_pack: [{ label: "Student-Facing Prompt Pack", href: "/ai-download-docs/student-facing-prompt-pack.txt" }, { label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }],
+  alpine_ai_tools_guide: [{ label: "Alpine AI Tools Guide", href: "/ai-download-docs/alpine-ai-tools-guide.txt" }],
+};
+
 export default function AlpineConsulting() {
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-  const handleSubscribe = () => { if (email.includes("@")) setSubscribed(true); };
+  const [showModal, setShowModal] = useState(false);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [formState, setFormState] = useState<FormState>("idle");
+  const [message, setMessage] = useState("");
+  const [interestType, setInterestType] = useState<InterestType | null>(null);
+  const [promptType, setPromptType] = useState<PromptType>("teachers_prompt_pack");
+  const downloads = promptDownloads[promptType];
+
+  const openModal = () => setShowModal(true);
+  const closeModal = () => { setShowModal(false); setStep(1); setFormState("idle"); setMessage(""); };
+
+  const handleContinue = () => {
+    if (!interestType) return;
+    if (step === 1) { setStep(interestType === "ai_resource_toolkit" ? 2 : 3); return; }
+    setStep(3);
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setFormState("loading"); setMessage("");
+    const fd = new FormData(e.currentTarget);
+    const firstName = String(fd.get("firstName") ?? "").trim();
+    const lastName = String(fd.get("lastName") ?? "").trim();
+    const payload = {
+      email: String(fd.get("email") ?? ""), firstName, lastName,
+      name: `${firstName} ${lastName}`.trim(),
+      role: String(fd.get("role") ?? ""), resource: interestType ?? "email_newsletter",
+      promptType, source: "landing_popup", company: String(fd.get("company") ?? ""),
+      webinarIdeas: String(fd.get("webinarIdeas") ?? "").trim(),
+    };
+    try {
+      const res = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const data = await res.json() as { status?: string; message?: string };
+      if (res.ok && data.status === "ok") {
+        setFormState("success");
+        setMessage(interestType === "ai_resource_toolkit" ? "You\u2019re in! Your selected downloads are ready below." : "You\u2019re in! Check your inbox for updates.");
+        e.currentTarget.reset(); return;
+      }
+      if (res.status === 409) { setFormState("duplicate"); setMessage("You\u2019re already subscribed with that email."); return; }
+      setFormState("error"); setMessage(data.message ?? "Something went wrong. Please try again.");
+    } catch { setFormState("error"); setMessage("Connection issue. Please try again in a moment."); }
+  };
   return (
     <div style={{ background: C.bg, color: C.navy, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
@@ -111,7 +182,7 @@ export default function AlpineConsulting() {
         input:focus { outline:none; border-color:${C.mint} !important; box-shadow:0 0 0 4px ${C.mintGlow} !important; }
         @media (max-width:768px) { .hero-t { font-size:38px !important; } .fw { flex-wrap:wrap !important; } .sp { padding:64px 20px !important; } .grid-s { grid-template-columns:1fr !important; } }
       `}</style>
-      <Nav />
+      <Nav onGetStarted={openModal} />
       {/* ═══ HERO ═══ */}
       <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "120px 24px 100px", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "-15%", right: "-5%", width: "55%", height: "55%", borderRadius: "50%", background: `radial-gradient(circle, ${C.mint}15, transparent 70%)`, filter: "blur(80px)", animation: "meshFloat 14s ease-in-out infinite", pointerEvents: "none" }} />
@@ -136,10 +207,10 @@ export default function AlpineConsulting() {
           </Reveal>
           <Reveal delay={0.36}>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 40, flexWrap: "wrap" }}>
-              <a href="#newsletter" style={{ background: C.navy, color: C.white, borderRadius: 28, padding: "16px 34px", fontSize: 16, fontWeight: 600, textDecoration: "none", transition: "all 0.3s ease", boxShadow: "0 4px 16px rgba(15,23,42,0.15)", display: "inline-block" }}
+              <button onClick={openModal} style={{ background: C.navy, color: C.white, borderRadius: 28, padding: "16px 34px", fontSize: 16, fontWeight: 600, border: "none", cursor: "pointer", transition: "all 0.3s ease", boxShadow: "0 4px 16px rgba(15,23,42,0.15)" }}
                 onMouseEnter={(e) => { (e.target as HTMLElement).style.background = C.mint; (e.target as HTMLElement).style.boxShadow = `0 4px 24px ${C.mintGlow}`; (e.target as HTMLElement).style.transform = "scale(1.04)"; }}
                 onMouseLeave={(e) => { (e.target as HTMLElement).style.background = C.navy; (e.target as HTMLElement).style.boxShadow = "0 4px 16px rgba(15,23,42,0.15)"; (e.target as HTMLElement).style.transform = "scale(1)"; }}
-              >Get your free AI toolkit</a>
+              >Get your free AI toolkit</button>
               <a href="#services" style={{ background: "transparent", color: C.slate, border: `1.5px solid ${C.border}`, borderRadius: 28, padding: "15px 30px", fontSize: 16, fontWeight: 500, textDecoration: "none", transition: "all 0.3s ease", display: "inline-flex", alignItems: "center", gap: 6 }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.navy; e.currentTarget.style.color = C.navy; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.slate; }}
@@ -268,9 +339,9 @@ export default function AlpineConsulting() {
                 <div style={{ flex: 1, minWidth: 280 }}>
                   <h3 style={{ fontSize: 34, fontWeight: 800, color: C.navy, letterSpacing: -1.2, lineHeight: 1.15, marginBottom: 16, whiteSpace: "pre-line" }}>{role.headline}</h3>
                   <p style={{ fontSize: 16, color: C.slate, lineHeight: 1.7 }}>{role.desc}</p>
-                  <a href="#newsletter" style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 20, fontSize: 14, fontWeight: 600, color: role.color, textDecoration: "none", transition: "gap 0.2s ease" }}
+                  <button onClick={openModal} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 20, fontSize: 14, fontWeight: 600, color: role.color, background: "none", border: "none", cursor: "pointer", padding: 0, transition: "gap 0.2s ease" }}
                     onMouseEnter={(e) => (e.currentTarget.style.gap = "10px")} onMouseLeave={(e) => (e.currentTarget.style.gap = "6px")}
-                  >Get started <Icon name="arrowRight" size={16} color={role.color} /></a>
+                  >Get started <Icon name="arrowRight" size={16} color={role.color} /></button>
                 </div>
               </div>
             </Reveal>
@@ -315,7 +386,7 @@ export default function AlpineConsulting() {
           </Reveal>
         </div>
       </section>
-      {/* ═══ NEWSLETTER ═══ */}
+      {/* ═══ NEWSLETTER CTA ═══ */}
       <section id="newsletter" className="sp" style={{ padding: "120px 24px" }}>
         <div style={{ maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
           <Reveal>
@@ -323,29 +394,17 @@ export default function AlpineConsulting() {
             <p style={{ fontSize: 17, color: C.slate, marginBottom: 40, lineHeight: 1.6 }}>Join our newsletter for practical tips, free tools, and workshop announcements. No fluff, no spam — just things you can use.</p>
           </Reveal>
           <Reveal delay={0.15}>
-            {subscribed ? (
-              <div style={{ background: C.mintLight, borderRadius: 16, padding: "24px 28px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
-                <Icon name="checkCircle" size={24} color={C.mintDark} />
-                <span style={{ fontSize: 16, fontWeight: 600, color: C.mintDark }}>You&apos;re in! Check your inbox for your free AI toolkit.</span>
-              </div>
-            ) : (
-              <>
-                <div style={{ display: "flex", gap: 10, maxWidth: 480, margin: "0 auto" }}>
-                  <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your school email" style={{ flex: 1, background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: "16px 20px", color: C.navy, fontSize: 15, transition: "all 0.3s ease" }} />
-                  <button onClick={handleSubscribe} style={{ background: C.navy, color: C.white, border: "none", borderRadius: 14, padding: "16px 28px", fontSize: 15, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.3s ease" }}
-                    onMouseEnter={(e) => { (e.target as HTMLElement).style.background = C.mint; (e.target as HTMLElement).style.transform = "scale(1.03)"; }}
-                    onMouseLeave={(e) => { (e.target as HTMLElement).style.background = C.navy; (e.target as HTMLElement).style.transform = "scale(1)"; }}
-                  >Start free</button>
-                </div>
-                <div style={{ display: "flex", justifyContent: "center", gap: 22, marginTop: 18 }}>
-                  {["Free forever", "No spam", "Unsubscribe anytime"].map((t) => (
-                    <span key={t} style={{ fontSize: 12, color: C.slateMuted, display: "flex", alignItems: "center", gap: 5 }}>
-                      <Icon name="checkCircle" size={13} color={C.mint} /> {t}
-                    </span>
-                  ))}
-                </div>
-              </>
-            )}
+            <button onClick={openModal} style={{ background: C.navy, color: C.white, border: "none", borderRadius: 14, padding: "16px 34px", fontSize: 16, fontWeight: 600, cursor: "pointer", transition: "all 0.3s ease" }}
+              onMouseEnter={(e) => { (e.target as HTMLElement).style.background = C.mint; (e.target as HTMLElement).style.transform = "scale(1.03)"; }}
+              onMouseLeave={(e) => { (e.target as HTMLElement).style.background = C.navy; (e.target as HTMLElement).style.transform = "scale(1)"; }}
+            >Get your free AI toolkit</button>
+            <div style={{ display: "flex", justifyContent: "center", gap: 22, marginTop: 18 }}>
+              {["Free forever", "No spam", "Unsubscribe anytime"].map((t) => (
+                <span key={t} style={{ fontSize: 12, color: C.slateMuted, display: "flex", alignItems: "center", gap: 5 }}>
+                  <Icon name="checkCircle" size={13} color={C.mint} /> {t}
+                </span>
+              ))}
+            </div>
           </Reveal>
         </div>
       </section>
@@ -364,6 +423,109 @@ export default function AlpineConsulting() {
           <span style={{ fontSize: 11, color: C.slateLight }}>&copy; 2026 Alpine AI Labs</span>
         </div>
       </footer>
+      {/* ═══ NEWSLETTER MODAL ═══ */}
+      {showModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 20 }} onClick={closeModal}>
+          <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: 24, maxWidth: 560, width: "100%", maxHeight: "92vh", overflow: "auto" }} onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+              <div>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: C.mint }}>Alpine AI Labs</span>
+                <h3 style={{ fontSize: 22, fontWeight: 800, color: C.navy, marginTop: 4 }}>Choose your updates &amp; resources</h3>
+              </div>
+              <button onClick={closeModal} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: C.white, fontSize: 18, cursor: "pointer", color: C.slate, display: "flex", alignItems: "center", justifyContent: "center" }}>{"\u00d7"}</button>
+            </div>
+            <p style={{ fontSize: 13, color: C.slate, marginBottom: 16 }}>Step {step} of 3 &middot; Pick your best-fit option</p>
+
+            {/* Step 1: Interest selection */}
+            {step === 1 && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                {interestOptions.map((opt) => (
+                  <button key={opt.id} onClick={() => setInterestType(opt.id)} style={{
+                    textAlign: "left", padding: 14, borderRadius: 12, cursor: "pointer",
+                    border: interestType === opt.id ? `2px solid ${C.mint}` : `1px solid ${C.border}`,
+                    background: interestType === opt.id ? `${C.mint}08` : C.bg,
+                    transition: "all 0.15s ease",
+                  }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: C.navy, marginBottom: 4 }}>{opt.label}</div>
+                    <div style={{ fontSize: 12, color: C.slate, lineHeight: 1.5 }}>{opt.helper}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Step 2: Resource selection */}
+            {step === 2 && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                {promptOptions.map((opt) => (
+                  <button key={opt.id} onClick={() => setPromptType(opt.id)} style={{
+                    textAlign: "left", padding: 12, borderRadius: 10, cursor: "pointer",
+                    border: promptType === opt.id ? `2px solid ${C.mint}` : `1px solid ${C.border}`,
+                    background: promptType === opt.id ? `${C.mint}08` : C.bg,
+                    transition: "all 0.15s ease",
+                  }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: C.navy, marginBottom: 3 }}>{opt.label}</div>
+                    <div style={{ fontSize: 11, color: C.slate, lineHeight: 1.4 }}>{opt.helper}</div>
+                  </button>
+                ))}
+                <div style={{ gridColumn: "1 / -1", border: `1px dashed ${C.border}`, borderRadius: 10, padding: 12, background: C.bg }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.navy, marginBottom: 6 }}>Downloads included:</div>
+                  {downloads.map((item) => (
+                    <div key={item.href} style={{ fontSize: 12, color: C.slate, marginBottom: 2 }}>&bull; {item.label}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Form */}
+            {step === 3 && (
+              <form onSubmit={handleSubmit} style={{ display: "grid", gap: 10 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <input name="firstName" type="text" placeholder="First name" required autoComplete="given-name" style={{ padding: "12px 14px", borderRadius: 10, border: `1px solid ${C.border}`, fontSize: 14, color: C.navy, background: C.white }} />
+                  <input name="lastName" type="text" placeholder="Last name" required autoComplete="family-name" style={{ padding: "12px 14px", borderRadius: 10, border: `1px solid ${C.border}`, fontSize: 14, color: C.navy, background: C.white }} />
+                </div>
+                <input name="email" type="email" placeholder="Work email address" required autoComplete="email" style={{ padding: "12px 14px", borderRadius: 10, border: `1px solid ${C.border}`, fontSize: 14, color: C.navy, background: C.white }} />
+                <select name="role" required defaultValue="" style={{ padding: "12px 14px", borderRadius: 10, border: `1px solid ${C.border}`, fontSize: 14, color: C.navy, background: C.white }}>
+                  <option value="" disabled>Your role...</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="counselor">Counselor</option>
+                  <option value="tech_director">Tech director</option>
+                  <option value="administrator">Administrator</option>
+                </select>
+                {interestType === "next_webinar_input" && (
+                  <textarea name="webinarIdeas" placeholder="What topics, challenges, or tools should we cover in the next webinar?" rows={3} style={{ padding: "12px 14px", borderRadius: 10, border: `1px solid ${C.border}`, fontSize: 14, color: C.navy, background: C.white, resize: "vertical", fontFamily: "inherit" }} />
+                )}
+                <input type="text" name="company" tabIndex={-1} autoComplete="off" style={{ display: "none" }} aria-hidden="true" />
+                <button type="submit" disabled={formState === "loading"} style={{ background: C.navy, color: C.white, border: "none", borderRadius: 10, padding: "14px 0", fontSize: 15, fontWeight: 600, cursor: "pointer", transition: "background 0.15s ease", marginTop: 4 }}
+                  onMouseEnter={(e) => { (e.target as HTMLElement).style.background = C.mint; }}
+                  onMouseLeave={(e) => { (e.target as HTMLElement).style.background = C.navy; }}
+                >{formState === "loading" ? "Submitting..." : "Get your selection"}</button>
+                <p style={{ fontSize: 11, color: C.slateMuted, textAlign: "center", margin: 0 }}>No spam. Unsubscribe anytime. We respect your inbox.</p>
+                {message && <p style={{ fontSize: 13, fontWeight: 600, textAlign: "center", color: formState === "error" ? "#EF4444" : C.mintDark }}>{message}</p>}
+                {formState === "success" && interestType === "ai_resource_toolkit" && (
+                  <div style={{ display: "grid", gap: 8, marginTop: 4 }}>
+                    {downloads.map((item) => (
+                      <a key={item.href} href={item.href} download style={{ display: "block", padding: "10px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.bg, color: C.navy, textDecoration: "none", fontSize: 13, fontWeight: 500, transition: "border-color 0.15s" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.borderColor = C.mint)} onMouseLeave={(e) => (e.currentTarget.style.borderColor = C.border)}
+                      >Download {item.label}</a>
+                    ))}
+                  </div>
+                )}
+              </form>
+            )}
+
+            {/* Navigation */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
+              {step > 1 ? (
+                <button onClick={() => setStep(step === 3 && interestType !== "ai_resource_toolkit" ? 1 : ((step - 1) as 1 | 2))} style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 10, padding: "8px 18px", fontSize: 13, fontWeight: 600, color: C.navy, cursor: "pointer" }}>Back</button>
+              ) : <span />}
+              {step < 3 && (
+                <button onClick={handleContinue} disabled={step === 1 && !interestType} style={{ background: C.navy, color: C.white, border: "none", borderRadius: 10, padding: "8px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: step === 1 && !interestType ? 0.5 : 1 }}>Continue</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

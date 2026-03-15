@@ -131,9 +131,33 @@ function Nav({ onJoin }: { onJoin: () => void }) {
 // MAIN
 // ═══════════════════════════════════════════════════
 export default function AlpineProduct() {
-  const [email, setEmail] = useState(""); const [showModal, setShowModal] = useState(false); const [joined, setJoined] = useState(false); const [modalEmail, setModalEmail] = useState("");
-  const handleJoin = () => setShowModal(true);
-  const submitWaitlist = () => { if (modalEmail.includes("@")) { setJoined(true); setTimeout(() => setShowModal(false), 2000); } };
+  const [email, setEmail] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [waitlistState, setWaitlistState] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [waitlistMsg, setWaitlistMsg] = useState("");
+  const handleJoin = () => { setShowModal(true); setWaitlistState("idle"); setWaitlistMsg(""); };
+
+  const submitWaitlist = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setWaitlistState("loading"); setWaitlistMsg("");
+    const fd = new FormData(e.currentTarget);
+    const payload = {
+      email: String(fd.get("email") ?? ""),
+      name: String(fd.get("name") ?? ""),
+      school: String(fd.get("school") ?? ""),
+      role: String(fd.get("role") ?? ""),
+      company: String(fd.get("company") ?? ""),
+    };
+    try {
+      const res = await fetch("/api/waitlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const data = await res.json() as { status?: string; message?: string };
+      if (res.ok && data.status === "ok") {
+        setWaitlistState("success"); setWaitlistMsg("You\u2019re on the list! We\u2019ll be in touch with early access details.");
+      } else {
+        setWaitlistState("error"); setWaitlistMsg(data.message ?? "Something went wrong. Please try again.");
+      }
+    } catch { setWaitlistState("error"); setWaitlistMsg("Connection issue. Please try again."); }
+  };
   return (
     <div style={{ background: C.bg, color: C.text, fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
@@ -480,16 +504,42 @@ export default function AlpineProduct() {
         <div style={{ fontSize: 11, color: C.textDim }}>Switzerland &middot; <a href="mailto:hello@alpineailabs.com" style={{ color: C.textMuted, textDecoration: "none" }}>hello@alpineailabs.com</a></div>
         <div style={{ fontSize: 10, color: C.textDim, marginTop: 8 }}>&copy; 2026 Alpine AI Labs</div>
       </footer>
-      {/* ═══ MODAL ═══ */}
+      {/* ═══ WAITLIST MODAL ═══ */}
       {showModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200 }} onClick={() => setShowModal(false)}>
-          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 18, padding: 32, maxWidth: 400, width: "90%", textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
-            {joined ? (
-              <><div style={{ marginBottom: 14, display: "flex", justifyContent: "center" }}><Icon name="checkCircle" size={44} color={C.mint} /></div><h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>You&apos;re on the list!</h3><p style={{ fontSize: 13, color: C.textMuted }}>We&apos;ll be in touch with early access details.</p></>
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 18, padding: 32, maxWidth: 420, width: "90%", textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
+            {waitlistState === "success" ? (
+              <>
+                <div style={{ marginBottom: 14, display: "flex", justifyContent: "center" }}><Icon name="checkCircle" size={44} color={C.mint} /></div>
+                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>You&apos;re on the list!</h3>
+                <p style={{ fontSize: 13, color: C.textMuted }}>{waitlistMsg}</p>
+              </>
             ) : (
-              <><h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Join the Waitlist</h3><p style={{ fontSize: 13, color: C.textMuted, marginBottom: 22 }}>Get early access and founding-member pricing.</p>
-                <input value={modalEmail} onChange={(e) => setModalEmail(e.target.value)} placeholder="Your school email" style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", color: C.text, fontSize: 14, marginBottom: 12 }} />
-                <button onClick={submitWaitlist} style={{ width: "100%", background: C.mint, color: C.white, border: "none", borderRadius: 10, padding: "12px 0", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Reserve My Spot</button></>
+              <>
+                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Join the Waitlist</h3>
+                <p style={{ fontSize: 13, color: C.textMuted, marginBottom: 22 }}>Get early access and founding-member pricing.</p>
+                <form onSubmit={submitWaitlist} style={{ display: "grid", gap: 10, textAlign: "left" }}>
+                  <input name="name" type="text" placeholder="Your name" required style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", color: C.text, fontSize: 14 }} />
+                  <input name="email" type="email" placeholder="Work email address" required style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", color: C.text, fontSize: 14 }} />
+                  <input name="school" type="text" placeholder="School or organization" style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", color: C.text, fontSize: 14 }} />
+                  <select name="role" defaultValue="" style={{ width: "100%", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 16px", color: C.text, fontSize: 14 }}>
+                    <option value="" disabled>Your role...</option>
+                    <option value="head_of_school">Head of School</option>
+                    <option value="administrator">Administrator</option>
+                    <option value="tech_director">Tech Director</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="counselor">Counselor</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <input type="text" name="company" tabIndex={-1} autoComplete="off" style={{ display: "none" }} aria-hidden="true" />
+                  <button type="submit" disabled={waitlistState === "loading"} style={{ width: "100%", background: C.mint, color: C.white, border: "none", borderRadius: 10, padding: "14px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "background 0.15s", marginTop: 4 }}
+                    onMouseEnter={(e) => { (e.target as HTMLElement).style.background = C.mintDark; }}
+                    onMouseLeave={(e) => { (e.target as HTMLElement).style.background = C.mint; }}
+                  >{waitlistState === "loading" ? "Submitting..." : "Reserve My Spot"}</button>
+                  {waitlistMsg && <p style={{ fontSize: 12, color: C.textDim, textAlign: "center", margin: 0 }}>{waitlistMsg}</p>}
+                  <p style={{ fontSize: 10, color: C.textDim, textAlign: "center", margin: 0 }}>No commitment. No credit card. Just early access.</p>
+                </form>
+              </>
             )}
           </div>
         </div>
