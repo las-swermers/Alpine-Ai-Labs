@@ -49,8 +49,8 @@ function Nav() {
         <span style={{ fontWeight: 700, fontSize: 16, color: C.navy, letterSpacing: -0.3 }}>Alpine AI Labs</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-        {["Services", "Approach", "Team"].map((l) => (
-          <a key={l} href={`#${l.toLowerCase()}`} style={{ color: C.slate, fontSize: 14, textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
+        {[{ l: "Services", href: "#services" }, { l: "Approach", href: "#approach" }, { l: "Product", href: "/product" }].map(({ l, href }) => (
+          <a key={l} href={href} style={{ color: C.slate, fontSize: 14, textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
             onMouseEnter={(e) => ((e.target as HTMLElement).style.color = C.navy)} onMouseLeave={(e) => ((e.target as HTMLElement).style.color = C.slate)}>{l}</a>
         ))}
         <a href="#newsletter" style={{ background: C.navy, color: C.white, borderRadius: 24, padding: "8px 20px", fontSize: 13, fontWeight: 600, textDecoration: "none", transition: "all 0.25s ease", display: "inline-block" }}
@@ -180,14 +180,14 @@ export default function AlpineConsulting() {
           </Reveal>
           <div className="grid-s" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
             {[
-              { icon: "globe", label: "International Schools", color: C.mint },
-              { icon: "bookOpen", label: "IB World Schools", color: "#3B82F6" },
-              { icon: "building", label: "K-12 Private Schools", color: "#8B5CF6" },
-              { icon: "users", label: "Charter Networks", color: "#06B6D4" },
-              { icon: "layers", label: "Boarding Schools", color: "#F59E0B" },
-              { icon: "shield", label: "Public Districts", color: "#EF4444" },
-              { icon: "heart", label: "Montessori Programs", color: "#EC4899" },
-              { icon: "radio", label: "Language Academies", color: "#14B8A6" },
+              { icon: "globe", label: "International Schools" },
+              { icon: "bookOpen", label: "IB World Schools" },
+              { icon: "building", label: "K-12 Private Schools" },
+              { icon: "users", label: "Charter Networks" },
+              { icon: "layers", label: "Boarding Schools" },
+              { icon: "shield", label: "Public Districts" },
+              { icon: "heart", label: "Montessori Programs" },
+              { icon: "radio", label: "Language Academies" },
             ].map((school, i) => (
               <Reveal key={i} delay={i * 0.05}>
                 <div style={{
@@ -195,11 +195,11 @@ export default function AlpineConsulting() {
                   display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 10,
                   transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)", cursor: "default",
                 }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = school.color + "44"; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 12px 32px ${school.color}12`; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = C.mint + "44"; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 12px 32px ${C.mint}12`; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
                 >
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: `${school.color}10`, border: `1px solid ${school.color}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon name={school.icon} size={22} color={school.color} />
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: `${C.mint}10`, border: `1px solid ${C.mint}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Icon name={school.icon} size={22} color={C.mint} />
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 600, color: C.navy, lineHeight: 1.3 }}>{school.label}</span>
                 </div>
@@ -241,8 +241,8 @@ export default function AlpineConsulting() {
           </Reveal>
           {[
             { icon: "bookOpen", role: "Teachers", headline: "Reclaim hours.\nTeach better.", desc: "Prompt techniques for lesson planning, differentiation, grading feedback, and automating the admin tasks that eat into your evenings.", details: ["Custom prompt templates for your subject", "AI-assisted rubric generation", "Differentiation strategies powered by AI", "Time-saving report card workflows"], color: C.mint },
-            { icon: "heart", role: "Counselors", headline: "Support more students.\nBurn out less.", desc: "AI tools for documentation, recommendation drafts, resource curation, and supporting students without doubling your workload.", details: ["AI-assisted recommendation letters", "Student concern documentation templates", "Resource curation workflows", "Scheduling and follow-up automation"], color: "#3B82F6" },
-            { icon: "settings", role: "Administrators", headline: "Lead the AI transition.\nConfidently.", desc: "Build in-house tools, evaluate platforms, create policies, and lead a school-wide AI rollout that respects privacy and builds trust.", details: ["AI tool evaluation frameworks", "Policy and acceptable use templates", "Staff training rollout planning", "Custom internal tool development"], color: "#8B5CF6" },
+            { icon: "heart", role: "Counselors", headline: "Support more students.\nBurn out less.", desc: "AI tools for documentation, recommendation drafts, resource curation, and supporting students without doubling your workload.", details: ["AI-assisted recommendation letters", "Student concern documentation templates", "Resource curation workflows", "Scheduling and follow-up automation"], color: C.mint },
+            { icon: "settings", role: "Administrators", headline: "Lead the AI transition.\nConfidently.", desc: "Build in-house tools, evaluate platforms, create policies, and lead a school-wide AI rollout that respects privacy and builds trust.", details: ["AI tool evaluation frameworks", "Policy and acceptable use templates", "Staff training rollout planning", "Custom internal tool development"], color: C.mint },
           ].map((role, i) => (
             <Reveal key={i} delay={0.1}>
               <div className="fw" style={{ display: "flex", gap: 48, alignItems: "center", padding: "56px 0", flexDirection: i % 2 === 1 ? "row-reverse" : "row", borderTop: i > 0 ? `1px solid ${C.border}` : "none" }}>

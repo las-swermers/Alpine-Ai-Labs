@@ -10,7 +10,6 @@ const C = {
   bg: "#030712", surface: "#0F172A", card: "#1E293B",
   border: "#334155", borderLight: "#475569",
   text: "#E2E8F0", textMuted: "#94A3B8", textDim: "#64748B", white: "#FFFFFF",
-  red: "#EF4444", amber: "#F59E0B", blue: "#3B82F6", purple: "#A855F7", cyan: "#06B6D4",
 };
 // ─── Icons ───
 const Icon = ({ name, size = 22, color = C.textMuted, sw = 1.75 }: { name: string; size?: number; color?: string; sw?: number }) => {
@@ -100,11 +99,10 @@ function IntegrationTicker() {
     { name: "School Pathways", cat: "SIS" }, { name: "Slate", cat: "Admissions" }, { name: "EdGenuity", cat: "LMS" },
     { name: "Verkada", cat: "Security" }, { name: "ParentSquare", cat: "Comms" },
   ];
-  const catColor = (cat: string) => ({ SIS: C.mint, LMS: C.purple, Admissions: C.blue, Boarding: C.cyan, Wellbeing: C.amber, CRM: C.amber, Safety: C.red, Security: C.red, Comms: C.blue }[cat] || C.textDim);
   const Pill = ({ item }: { item: { name: string; cat: string } }) => (
     <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 18px", marginRight: 12, whiteSpace: "nowrap", flexShrink: 0 }}>
-      <div style={{ width: 32, height: 32, borderRadius: 8, background: `${catColor(item.cat)}10`, border: `1px solid ${catColor(item.cat)}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: catColor(item.cat) }}>{item.name.charAt(0)}</div>
-      <div><div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{item.name}</div><div style={{ fontSize: 9, fontWeight: 600, color: catColor(item.cat), letterSpacing: 0.5, textTransform: "uppercase" }}>{item.cat}</div></div>
+      <div style={{ width: 32, height: 32, borderRadius: 8, background: `${C.mint}10`, border: `1px solid ${C.mint}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: C.mint }}>{item.name.charAt(0)}</div>
+      <div><div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{item.name}</div><div style={{ fontSize: 9, fontWeight: 600, color: C.mint, letterSpacing: 0.5, textTransform: "uppercase" }}>{item.cat}</div></div>
     </div>
   );
   return <>
@@ -122,9 +120,9 @@ function Nav({ onJoin }: { onJoin: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => { const fn = () => setScrolled(window.scrollY > 50); window.addEventListener("scroll", fn); return () => window.removeEventListener("scroll", fn); }, []);
   return <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 56, padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? "rgba(3,7,18,0.88)" : "transparent", backdropFilter: scrolled ? "blur(16px) saturate(180%)" : "none", borderBottom: scrolled ? `1px solid ${C.border}` : "1px solid transparent", transition: "all 0.35s ease" }}>
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}><div style={{ width: 28, height: 28, borderRadius: 7, background: C.navyLight, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 12, height: 12, borderRadius: 3, background: C.mint }} /></div><span style={{ fontWeight: 700, fontSize: 15, color: C.text, letterSpacing: -0.3 }}>Alpine AI</span></div>
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}><div style={{ width: 28, height: 28, borderRadius: 7, background: C.navyLight, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 12, height: 12, borderRadius: 3, background: C.mint }} /></div><span style={{ fontWeight: 700, fontSize: 15, color: C.text, letterSpacing: -0.3 }}>Alpine AI Labs</span></div>
     <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-      {["Platform", "Features", "Early Access"].map((l) => <a key={l} href={`#${l.toLowerCase().replace(" ", "-")}`} style={{ color: C.textMuted, fontSize: 13, textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => ((e.target as HTMLElement).style.color = C.text)} onMouseLeave={(e) => ((e.target as HTMLElement).style.color = C.textMuted)}>{l}</a>)}
+      {[{ l: "Consulting", href: "/" }, { l: "Platform", href: "#platform" }, { l: "Features", href: "#features" }, { l: "Early Access", href: "#early-access" }].map(({ l, href }) => <a key={l} href={href} style={{ color: C.textMuted, fontSize: 13, textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => ((e.target as HTMLElement).style.color = C.text)} onMouseLeave={(e) => ((e.target as HTMLElement).style.color = C.textMuted)}>{l}</a>)}
       <button onClick={onJoin} style={{ background: C.mint, color: C.white, border: "none", borderRadius: 20, padding: "7px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.25s ease" }} onMouseEnter={(e) => { (e.target as HTMLElement).style.background = C.mintDark; (e.target as HTMLElement).style.transform = "scale(1.04)"; }} onMouseLeave={(e) => { (e.target as HTMLElement).style.background = C.mint; (e.target as HTMLElement).style.transform = "scale(1)"; }}>Join Waitlist</button>
     </div>
   </nav>;
@@ -192,7 +190,7 @@ export default function AlpineProduct() {
                   <div key={app} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 12px", fontSize: 11, color: C.textDim, fontWeight: 500 }}>{app}</div>
                 ))}
               </div>
-              <div style={{ fontSize: 10, color: C.red, marginTop: 4, fontWeight: 600 }}>10+ tools, no shared view</div>
+              <div style={{ fontSize: 10, color: C.textDim, marginTop: 4, fontWeight: 600 }}>10+ tools, no shared view</div>
             </div>
             {/* Arrow */}
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -245,9 +243,9 @@ export default function AlpineProduct() {
               <div className="fw" style={{ display: "flex", gap: 12, marginBottom: 16 }}>
                 {[
                   { label: "Total Students", value: "2,847", change: 3.2, spark: [200, 220, 195, 240, 280, 310, 295, 340, 380, 420], color: C.mint, icon: "users" },
-                  { label: "Avg. GPA", value: "3.42", change: 1.8, spark: [3.2, 3.25, 3.3, 3.28, 3.35, 3.38, 3.4, 3.42], color: C.blue, icon: "bookOpen" },
-                  { label: "Wellbeing Score", value: "78%", change: -2.1, spark: [82, 80, 81, 79, 78, 77, 78, 78], color: C.amber, icon: "heart" },
-                  { label: "Staff Retention", value: "94%", change: 5.4, spark: [88, 89, 90, 91, 92, 93, 93, 94], color: C.purple, icon: "users" },
+                  { label: "Avg. GPA", value: "3.42", change: 1.8, spark: [3.2, 3.25, 3.3, 3.28, 3.35, 3.38, 3.4, 3.42], color: C.mint, icon: "bookOpen" },
+                  { label: "Wellbeing Score", value: "78%", change: -2.1, spark: [82, 80, 81, 79, 78, 77, 78, 78], color: C.mint, icon: "heart" },
+                  { label: "Staff Retention", value: "94%", change: 5.4, spark: [88, 89, 90, 91, 92, 93, 93, 94], color: C.mint, icon: "users" },
                 ].map((m, i) => (
                   <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: 14, flex: 1, minWidth: 140 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
@@ -258,7 +256,7 @@ export default function AlpineProduct() {
                       <div style={{ fontSize: 24, fontWeight: 700 }}>{m.value}</div>
                       <Spark data={m.spark} color={m.color} w={60} h={22} />
                     </div>
-                    <div style={{ fontSize: 10, color: m.change >= 0 ? C.mint : C.red, marginTop: 4 }}>{m.change >= 0 ? "\u2191" : "\u2193"} {Math.abs(m.change)}% vs last term</div>
+                    <div style={{ fontSize: 10, color: m.change >= 0 ? C.mint : C.textDim, marginTop: 4 }}>{m.change >= 0 ? "\u2191" : "\u2193"} {Math.abs(m.change)}% vs last term</div>
                   </div>
                 ))}
               </div>
@@ -267,16 +265,16 @@ export default function AlpineProduct() {
                 {/* Academics bar */}
                 <div style={{ flex: 2, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16 }}>
                   <div style={{ fontSize: 11, color: C.textDim, marginBottom: 10 }}>Grade Distribution by Department</div>
-                  <Bars data={[85, 78, 92, 71, 88, 76]} colors={[C.mint, C.blue, C.mint, C.amber, C.blue, C.purple]} labels={["Math", "English", "Science", "Arts", "Lang.", "Social"]} h={100} />
+                  <Bars data={[85, 78, 92, 71, 88, 76]} colors={["#10B981", "#34D399", "#10B981", "#6EE7B7", "#34D399", "#10B981"]} labels={["Math", "English", "Science", "Arts", "Lang.", "Social"]} h={100} />
                 </div>
                 {/* Admissions funnel mini */}
                 <div style={{ flex: 1, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16 }}>
                   <div style={{ fontSize: 11, color: C.textDim, marginBottom: 10 }}>Admissions Funnel</div>
                   {[
                     { s: "Inquiries", v: 1240, pct: 100, c: C.mint },
-                    { s: "Applied", v: 384, pct: 31, c: C.blue },
-                    { s: "Accepted", v: 248, pct: 20, c: C.purple },
-                    { s: "Enrolled", v: 198, pct: 16, c: C.cyan },
+                    { s: "Applied", v: 384, pct: 31, c: C.mint },
+                    { s: "Accepted", v: 248, pct: 20, c: C.mint },
+                    { s: "Enrolled", v: 198, pct: 16, c: C.mint },
                   ].map((f) => (
                     <div key={f.s} style={{ marginBottom: 6 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: C.textMuted, marginBottom: 2 }}><span>{f.s}</span><span>{f.v}</span></div>
@@ -287,9 +285,9 @@ export default function AlpineProduct() {
                 {/* Budget donut */}
                 <div style={{ flex: 1, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                   <div style={{ fontSize: 11, color: C.textDim, marginBottom: 8 }}>Budget Allocation</div>
-                  <Donut segments={[{ value: 42, color: C.mint }, { value: 28, color: C.blue }, { value: 18, color: C.purple }, { value: 12, color: C.amber }]} size={90} />
+                  <Donut segments={[{ value: 42, color: "#10B981" }, { value: 28, color: "#34D399" }, { value: 18, color: "#6EE7B7" }, { value: 12, color: "#A7F3D0" }]} size={90} />
                   <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap", justifyContent: "center" }}>
-                    {[{ l: "Staff", c: C.mint }, { l: "Programs", c: C.blue }, { l: "Facilities", c: C.purple }, { l: "Tech", c: C.amber }].map((x) => (
+                    {[{ l: "Staff", c: "#10B981" }, { l: "Programs", c: "#34D399" }, { l: "Facilities", c: "#6EE7B7" }, { l: "Tech", c: "#A7F3D0" }].map((x) => (
                       <div key={x.l} style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 8, color: C.textDim }}><div style={{ width: 5, height: 5, borderRadius: 3, background: x.c }} /> {x.l}</div>
                     ))}
                   </div>
@@ -309,15 +307,15 @@ export default function AlpineProduct() {
             </div>
           </Reveal>
           {[
-            { icon: "bookOpen", color: C.blue, title: "Academic Performance", sub: "Grades, assessments, curriculum effectiveness, and learning outcomes \u2014 all in one view.",
+            { icon: "bookOpen", color: C.mint, title: "Academic Performance", sub: "Grades, assessments, curriculum effectiveness, and learning outcomes \u2014 all in one view.",
               details: ["Grade trends by department, cohort, and teacher", "Assessment performance vs. learning objectives", "At-risk student identification based on academic patterns", "Curriculum effectiveness scoring and gap analysis"] },
             { icon: "clipboardList", color: C.mint, title: "Admissions & Enrollment", sub: "Full-funnel visibility from first inquiry to enrolled student, with conversion insights at every stage.",
               details: ["Inquiry-to-enrollment conversion tracking", "Application pipeline with automated stage alerts", "Yield prediction using historical patterns", "Source attribution \u2014 see which channels drive enrollment"] },
-            { icon: "heart", color: C.amber, title: "Student Wellbeing", sub: "Behavioral patterns, attendance signals, counselor caseloads, and early-warning indicators.",
+            { icon: "heart", color: C.mint, title: "Student Wellbeing", sub: "Behavioral patterns, attendance signals, counselor caseloads, and early-warning indicators.",
               details: ["Wellbeing score tracking across student populations", "Attendance pattern analysis and alert triggers", "Counselor caseload management and workload balance", "Behavioral incident trends and intervention tracking"] },
-            { icon: "users", color: C.purple, title: "Staff & HR", sub: "Retention rates, professional development tracking, workload distribution, and satisfaction metrics.",
+            { icon: "users", color: C.mint, title: "Staff & HR", sub: "Retention rates, professional development tracking, workload distribution, and satisfaction metrics.",
               details: ["Retention and turnover analytics by department", "Professional development hours and completion rates", "Workload and class-size distribution analysis", "Staff satisfaction survey trends over time"] },
-            { icon: "dollarSign", color: C.cyan, title: "Financial Overview", sub: "Budget vs. actuals, tuition collection, departmental spending, and cost-per-student analysis.",
+            { icon: "dollarSign", color: C.mint, title: "Financial Overview", sub: "Budget vs. actuals, tuition collection, departmental spending, and cost-per-student analysis.",
               details: ["Real-time budget vs. actual spending dashboards", "Tuition and fee collection tracking", "Departmental cost analysis and forecasting", "Financial aid allocation and impact reporting"] },
           ].map((domain, i) => (
             <Reveal key={i} delay={0.08}>
@@ -400,8 +398,8 @@ export default function AlpineProduct() {
           <div className="fw" style={{ display: "flex", gap: 18, justifyContent: "center" }}>
             {[
               { n: <Counter end={28} />, l: "Platform Integrations", sub: "SIS, LMS, CRM & more", c: C.mint },
-              { n: <Counter end={5} />, l: "Decision Domains", sub: "Academics to finance", c: C.blue },
-              { n: <><Counter end={100} />%</>, l: "Data Unified", sub: "Zero spreadsheets needed", c: C.purple },
+              { n: <Counter end={5} />, l: "Decision Domains", sub: "Academics to finance", c: C.mint },
+              { n: <><Counter end={100} />%</>, l: "Data Unified", sub: "Zero spreadsheets needed", c: C.mint },
             ].map((stat, i) => (
               <Reveal key={i} delay={i * 0.1}>
                 <div style={{ flex: 1, minWidth: 190, background: `${stat.c}08`, border: `1px solid ${stat.c}20`, borderRadius: 14, padding: "28px 22px" }}>
