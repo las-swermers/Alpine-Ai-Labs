@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 // ═══════════════════════════════════════════════════
-// ALPINE AI LABS — PRODUCT LANDING PAGE
-// School Decision Intelligence Platform
+// BEACON — School Decision Intelligence Dashboard
+// by Alpine AI Labs
 // ═══════════════════════════════════════════════════
 const C = {
   navy: "#0F172A", navyLight: "#1E293B", slate: "#64748B",
@@ -120,9 +120,9 @@ function Nav({ onJoin }: { onJoin: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => { const fn = () => setScrolled(window.scrollY > 50); window.addEventListener("scroll", fn); return () => window.removeEventListener("scroll", fn); }, []);
   return <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 56, padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? "rgba(3,7,18,0.88)" : "transparent", backdropFilter: scrolled ? "blur(16px) saturate(180%)" : "none", borderBottom: scrolled ? `1px solid ${C.border}` : "1px solid transparent", transition: "all 0.35s ease" }}>
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}><div style={{ width: 28, height: 28, borderRadius: 7, background: C.navyLight, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 12, height: 12, borderRadius: 3, background: C.mint }} /></div><span style={{ fontWeight: 700, fontSize: 15, color: C.text, letterSpacing: -0.3 }}>Alpine AI Labs</span></div>
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}><div style={{ width: 28, height: 28, borderRadius: 7, background: C.navyLight, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 12, height: 12, borderRadius: 3, background: C.mint }} /></div><span style={{ fontWeight: 700, fontSize: 15, color: C.text, letterSpacing: -0.3 }}>Beacon</span><span style={{ fontSize: 10, color: C.textDim, fontWeight: 500 }}>by Alpine AI Labs</span></div>
     <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-      {[{ l: "Consulting", href: "/" }, { l: "Platform", href: "#platform" }, { l: "Features", href: "#features" }, { l: "Early Access", href: "#early-access" }].map(({ l, href }) => <a key={l} href={href} style={{ color: C.textMuted, fontSize: 13, textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => ((e.target as HTMLElement).style.color = C.text)} onMouseLeave={(e) => ((e.target as HTMLElement).style.color = C.textMuted)}>{l}</a>)}
+      {[{ l: "Consulting", href: "/" }, { l: "Dashboard", href: "#platform" }, { l: "Features", href: "#features" }, { l: "Early Access", href: "#early-access" }].map(({ l, href }) => <a key={l} href={href} style={{ color: C.textMuted, fontSize: 13, textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => ((e.target as HTMLElement).style.color = C.text)} onMouseLeave={(e) => ((e.target as HTMLElement).style.color = C.textMuted)}>{l}</a>)}
       <button onClick={onJoin} style={{ background: C.mint, color: C.white, border: "none", borderRadius: 20, padding: "7px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.25s ease" }} onMouseEnter={(e) => { (e.target as HTMLElement).style.background = C.mintDark; (e.target as HTMLElement).style.transform = "scale(1.04)"; }} onMouseLeave={(e) => { (e.target as HTMLElement).style.background = C.mint; (e.target as HTMLElement).style.transform = "scale(1)"; }}>Join Waitlist</button>
     </div>
   </nav>;
@@ -130,7 +130,7 @@ function Nav({ onJoin }: { onJoin: () => void }) {
 // ═══════════════════════════════════════════════════
 // MAIN
 // ═══════════════════════════════════════════════════
-export default function AlpineProduct() {
+export default function BeaconProduct() {
   const [email, setEmail] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [waitlistState, setWaitlistState] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -188,7 +188,7 @@ export default function AlpineProduct() {
         </Reveal>
         <Reveal delay={0.2}>
           <p style={{ fontSize: 18, color: C.textMuted, maxWidth: 560, marginTop: 24, lineHeight: 1.65 }}>
-            Alpine connects every platform your school uses — SIS, LMS, admissions, wellbeing, finance — into one intelligent hub where data becomes decisions.
+            Beacon connects every platform your school uses — SIS, LMS, admissions, wellbeing, finance — into one intelligent hub where data becomes decisions.
           </p>
         </Reveal>
         <Reveal delay={0.3}>
@@ -208,7 +208,7 @@ export default function AlpineProduct() {
           <div style={{ marginTop: 56, maxWidth: 800, width: "100%", display: "flex", alignItems: "center", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
             {/* Scattered apps */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flex: 1, minWidth: 240 }}>
-              <div style={{ fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 600, marginBottom: 4 }}>Before Alpine</div>
+              <div style={{ fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 600, marginBottom: 4 }}>Before Beacon</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", maxWidth: 280 }}>
                 {["SIS", "LMS", "CRM", "Sheets", "Finance", "HR", "Email", "Forms", "Reports", "Docs"].map((app) => (
                   <div key={app} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 12px", fontSize: 11, color: C.textDim, fontWeight: 500 }}>{app}</div>
@@ -223,10 +223,10 @@ export default function AlpineProduct() {
             </div>
             {/* Alpine unified */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flex: 1, minWidth: 240 }}>
-              <div style={{ fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 600, marginBottom: 4 }}>With Alpine</div>
+              <div style={{ fontSize: 11, color: C.textDim, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 600, marginBottom: 4 }}>With Beacon</div>
               <div style={{ background: `${C.mint}0a`, border: `1px solid ${C.mint}25`, borderRadius: 14, padding: "18px 28px", display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 9, background: `${C.mint}18`, border: `1px solid ${C.mint}33`, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 14, height: 14, borderRadius: 3, background: C.mint }} /></div>
-                <div><div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>Alpine AI</div><div style={{ fontSize: 10, color: C.mint, fontWeight: 600 }}>One decision hub</div></div>
+                <div><div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>Beacon</div><div style={{ fontSize: 10, color: C.mint, fontWeight: 600 }}>One decision hub</div></div>
               </div>
               <div style={{ fontSize: 10, color: C.mint, marginTop: 4, fontWeight: 600 }}>All data, all insights, one place</div>
             </div>
@@ -242,7 +242,7 @@ export default function AlpineProduct() {
               <h2 style={{ fontSize: 42, fontWeight: 800, letterSpacing: -1.5, lineHeight: 1.12 }}>
                 Every department. Every metric.<br /><span style={{ color: C.mint }}>One screen.</span>
               </h2>
-              <p style={{ fontSize: 16, color: C.textMuted, maxWidth: 520, margin: "16px auto 0", lineHeight: 1.6 }}>Stop toggling between PowerSchool, spreadsheets, and email. Alpine brings everything into a single view built for school leaders.</p>
+              <p style={{ fontSize: 16, color: C.textMuted, maxWidth: 520, margin: "16px auto 0", lineHeight: 1.6 }}>Stop toggling between PowerSchool, spreadsheets, and email. Beacon brings everything into a single view built for school leaders.</p>
             </div>
           </Reveal>
           {/* Dashboard mockup — 4 domain tabs */}
@@ -252,7 +252,7 @@ export default function AlpineProduct() {
                 <div style={{ width: 10, height: 10, borderRadius: 10, background: "#ff5f57" }} />
                 <div style={{ width: 10, height: 10, borderRadius: 10, background: "#ffbd2e" }} />
                 <div style={{ width: 10, height: 10, borderRadius: 10, background: "#28c840" }} />
-                <span style={{ marginLeft: 10, fontSize: 11, color: C.textDim }}>Alpine AI — School Dashboard</span>
+                <span style={{ marginLeft: 10, fontSize: 11, color: C.textDim }}>Beacon — School Dashboard</span>
               </div>
               {/* Domain tabs */}
               <div style={{ display: "flex", gap: 4, marginBottom: 18, flexWrap: "wrap" }}>
@@ -326,7 +326,7 @@ export default function AlpineProduct() {
         <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: 56 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: C.mint, display: "block", marginBottom: 12 }}>Five Domains, One Platform</span>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: C.mint, display: "block", marginBottom: 12 }}>Five Domains, One Dashboard</span>
               <h2 style={{ fontSize: 42, fontWeight: 800, letterSpacing: -1.5 }}>Every decision your school makes,<br /><span style={{ color: C.mint }}>backed by data</span>.</h2>
             </div>
           </Reveal>
@@ -377,7 +377,7 @@ export default function AlpineProduct() {
           <Reveal>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: C.mint, display: "block", marginBottom: 12 }}>Built-in AI Assistant</span>
-              <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2 }}>Ask Alpine anything about <span style={{ color: C.mint }}>your school</span>.</h2>
+              <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1.2 }}>Ask Beacon anything about <span style={{ color: C.mint }}>your school</span>.</h2>
               <p style={{ fontSize: 15, color: C.textMuted, maxWidth: 480, margin: "12px auto 0", lineHeight: 1.6 }}>Skip the spreadsheets. Ask a question in plain language and get answers from across every connected system.</p>
             </div>
           </Reveal>
@@ -385,7 +385,7 @@ export default function AlpineProduct() {
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: 22, maxWidth: 600, margin: "0 auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, paddingBottom: 12, borderBottom: `1px solid ${C.border}` }}>
                 <div style={{ width: 7, height: 7, borderRadius: 4, background: C.mint }} />
-                <span style={{ fontSize: 12, fontWeight: 600 }}>Alpine AI</span>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>Beacon AI</span>
                 <span style={{ fontSize: 10, color: C.textDim, marginLeft: "auto" }}>Online</span>
               </div>
               <Chat role="user" text="What's our 9th grade retention risk looking like compared to last year?" delay={200} />
@@ -407,7 +407,7 @@ export default function AlpineProduct() {
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: C.mint, display: "block", marginBottom: 12 }}>Seamless Integrations</span>
               <h2 style={{ fontSize: 38, fontWeight: 800, letterSpacing: -1.5, marginBottom: 14 }}>Connects to the platforms<br /><span style={{ color: C.mint }}>your school already uses</span>.</h2>
-              <p style={{ fontSize: 15, color: C.textMuted, maxWidth: 500, margin: "0 auto", lineHeight: 1.6 }}>No migration, no disruption. Alpine pulls data from every major education platform into one unified view.</p>
+              <p style={{ fontSize: 15, color: C.textMuted, maxWidth: 500, margin: "0 auto", lineHeight: 1.6 }}>No migration, no disruption. Beacon pulls data from every major education platform into one unified view.</p>
             </div>
           </Reveal>
           <IntegrationTicker />
@@ -444,12 +444,12 @@ export default function AlpineProduct() {
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: C.mint, display: "block", marginBottom: 12 }}>Early Access</span>
               <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: -1.5, marginBottom: 14 }}>Get in early.<br /><span style={{ color: C.textMuted }}>Shape what we build.</span></h2>
-              <p style={{ fontSize: 15, color: C.textMuted, maxWidth: 480, margin: "0 auto", lineHeight: 1.65 }}>We&apos;re opening Alpine to a select group of founding schools. Join the waitlist to lock in priority access.</p>
+              <p style={{ fontSize: 15, color: C.textMuted, maxWidth: 480, margin: "0 auto", lineHeight: 1.65 }}>We&apos;re opening Beacon to a select group of founding schools. Join the waitlist to lock in priority access.</p>
             </div>
           </Reveal>
           <div className="fw" style={{ display: "flex", gap: 16, justifyContent: "center", marginBottom: 40 }}>
             {[
-              { icon: "rocket", title: "Priority Access", desc: "Be first to use Alpine when we launch." },
+              { icon: "rocket", title: "Priority Access", desc: "Be first to use Beacon when we launch." },
               { icon: "gem", title: "Founding Pricing", desc: "Lock in exclusive rates \u2014 permanently." },
               { icon: "wrench", title: "Shape the Product", desc: "Direct input on features and workflows." },
             ].map((p, i) => (
@@ -499,7 +499,7 @@ export default function AlpineProduct() {
       <footer style={{ borderTop: `1px solid ${C.border}`, padding: "32px 24px", textAlign: "center" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}>
           <div style={{ width: 22, height: 22, borderRadius: 5, background: C.navyLight, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ width: 9, height: 9, borderRadius: 2, background: C.mint }} /></div>
-          <span style={{ fontWeight: 700, fontSize: 13 }}>Alpine AI Labs</span>
+          <span style={{ fontWeight: 700, fontSize: 13 }}>Beacon</span><span style={{ fontSize: 10, color: C.textDim, marginLeft: 6 }}>by Alpine AI Labs</span>
         </div>
         <div style={{ fontSize: 11, color: C.textDim }}>Switzerland &middot; <a href="mailto:hello@alpineailabs.com" style={{ color: C.textMuted, textDecoration: "none" }}>hello@alpineailabs.com</a></div>
         <div style={{ fontSize: 10, color: C.textDim, marginTop: 8 }}>&copy; 2026 Alpine AI Labs</div>

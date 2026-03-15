@@ -49,7 +49,7 @@ function Nav({ onGetStarted }: { onGetStarted: () => void }) {
         <span style={{ fontWeight: 700, fontSize: 16, color: C.navy, letterSpacing: -0.3 }}>Alpine AI Labs</span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-        {[{ l: "Services", href: "#services" }, { l: "Approach", href: "#approach" }, { l: "Product", href: "/product" }].map(({ l, href }) => (
+        {[{ l: "Services", href: "#services" }, { l: "Approach", href: "#approach" }, { l: "Beacon", href: "/product" }].map(({ l, href }) => (
           <a key={l} href={href} style={{ color: C.slate, fontSize: 14, textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }}
             onMouseEnter={(e) => ((e.target as HTMLElement).style.color = C.navy)} onMouseLeave={(e) => ((e.target as HTMLElement).style.color = C.slate)}>{l}</a>
         ))}
