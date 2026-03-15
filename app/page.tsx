@@ -158,8 +158,9 @@ export default function AlpineConsulting() {
     };
     try {
       const res = await fetch("/api/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      const data = await res.json() as { status?: string; message?: string };
-      if (res.ok && data.status === "ok") {
+      let data: { status?: string; message?: string } = {};
+      try { data = await res.json() as typeof data; } catch { /* response may not be JSON */ }
+      if (res.ok || data.status === "ok") {
         setFormState("success");
         setMessage(interestType === "ai_resource_toolkit" ? "You\u2019re in! Your selected downloads are ready below." : "You\u2019re in! Check your inbox for updates.");
         e.currentTarget.reset(); return;

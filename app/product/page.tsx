@@ -150,8 +150,9 @@ export default function BeaconProduct() {
     };
     try {
       const res = await fetch("/api/waitlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      const data = await res.json() as { status?: string; message?: string };
-      if (res.ok && data.status === "ok") {
+      let data: { status?: string; message?: string } = {};
+      try { data = await res.json() as typeof data; } catch { /* response may not be JSON */ }
+      if (res.ok || data.status === "ok") {
         setWaitlistState("success"); setWaitlistMsg("You\u2019re on the list! We\u2019ll be in touch with early access details.");
       } else {
         setWaitlistState("error"); setWaitlistMsg(data.message ?? "Something went wrong. Please try again.");
