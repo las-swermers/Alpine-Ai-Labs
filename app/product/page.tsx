@@ -1,6 +1,5 @@
 "use client";
 /* eslint-disable react/no-unescaped-entities */
-// @ts-nocheck
 
 import { useState, useEffect, useRef } from "react";
 
@@ -19,7 +18,7 @@ const C = {
 };
 
 // ─── Icons ───
-const Icon = ({ name, size = 22, color = C.textMuted, sw = 1.75 }) => {
+const Icon = ({ name, size = 22, color = C.textMuted, sw = 1.75 }: { name: string; size?: number; color?: string; sw?: number }) => {
   const p = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round", style: { display: "block", flexShrink: 0 } };
   const d = {
     barChart: <><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></>,
@@ -46,26 +45,26 @@ const Icon = ({ name, size = 22, color = C.textMuted, sw = 1.75 }) => {
   return <svg {...p}>{d[name]}</svg>;
 };
 
-function Reveal({ children, delay = 0, className = "", style = {} }) {
+function Reveal({ children, delay = 0, className = "", style = {} }: { children: React.ReactNode; delay?: number; className?: string; style?: React.CSSProperties }) {
   const ref = useRef(null);
   const [vis, setVis] = useState(false);
   useEffect(() => { const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold: 0.1 }); if (ref.current) obs.observe(ref.current); return () => obs.disconnect(); }, []);
   return <div ref={ref} className={className} style={{ ...style, opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(30px)", transition: `opacity 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s` }}>{children}</div>;
 }
 
-function Counter({ end, suffix = "", duration = 2000 }) {
+function Counter({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [val, setVal] = useState(0); const ref = useRef(null); const started = useRef(false);
   useEffect(() => { const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting && !started.current) { started.current = true; const t0 = performance.now(); const step = (now) => { const p = Math.min((now - t0) / duration, 1); setVal(Math.floor(p * end)); if (p < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); } }, { threshold: 0.3 }); if (ref.current) obs.observe(ref.current); return () => obs.disconnect(); }, [end, duration]);
   return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
 }
 
-function Spark({ data, color = C.mint, w = 100, h = 30 }) {
+function Spark({ data, color = C.mint, w = 100, h = 30 }: { data: number[]; color?: string; w?: number; h?: number }) {
   const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
   const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * (h - 4) - 2}`).join(" ");
   return <svg width={w} height={h}><polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
-function Bars({ data, colors, labels, h = 120 }) {
+function Bars({ data, colors, labels, h = 120 }: { data: number[]; colors: string[]; labels: string[]; h?: number }) {
   const max = Math.max(...data);
   return <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: h }}>{data.map((v, i) => (
     <div key={i} style={{ flex: 1, textAlign: "center" }}>
@@ -75,7 +74,7 @@ function Bars({ data, colors, labels, h = 120 }) {
   ))}</div>;
 }
 
-function Donut({ segments, size = 110 }) {
+function Donut({ segments, size = 110 }: { segments: { value: number; color: string }[]; size?: number }) {
   const total = segments.reduce((s, x) => s + x.value, 0); let cum = 0; const r = 40, circ = 2 * Math.PI * r;
   return <svg width={size} height={size} viewBox="0 0 110 110">{segments.map((seg, i) => { const pct = seg.value / total, offset = circ * (1 - pct), rot = (cum / total) * 360 - 90; cum += seg.value; return <circle key={i} cx="55" cy="55" r={r} fill="none" stroke={seg.color} strokeWidth="9" strokeDasharray={circ} strokeDashoffset={offset} transform={`rotate(${rot} 55 55)`} />; })}
     <text x="55" y="52" textAnchor="middle" fill={C.text} fontSize="18" fontWeight="700" fontFamily="Inter,sans-serif">{total}</text>
@@ -83,7 +82,7 @@ function Donut({ segments, size = 110 }) {
   </svg>;
 }
 
-function Chat({ role, text, delay = 0 }) {
+function Chat({ role, text, delay = 0 }: { role: "user" | "ai"; text: string; delay?: number }) {
   const isUser = role === "user"; const [show, setShow] = useState(false);
   useEffect(() => { const t = setTimeout(() => setShow(true), delay); return () => clearTimeout(t); }, [delay]);
   return <div style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", marginBottom: 8, opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(8px)", transition: "all 0.5s ease" }}>
@@ -106,8 +105,8 @@ function IntegrationTicker() {
     { name: "School Pathways", cat: "SIS" }, { name: "Slate", cat: "Admissions" }, { name: "EdGenuity", cat: "LMS" },
     { name: "Verkada", cat: "Security" }, { name: "ParentSquare", cat: "Comms" },
   ];
-  const catColor = (cat) => ({ SIS: C.mint, LMS: C.purple, Admissions: C.blue, Boarding: C.cyan, Wellbeing: C.amber, CRM: C.amber, Safety: C.red, Security: C.red, Comms: C.blue }[cat] || C.textDim);
-  const Pill = ({ item }) => (
+  const catColor = (cat: string) => ({ SIS: C.mint, LMS: C.purple, Admissions: C.blue, Boarding: C.cyan, Wellbeing: C.amber, CRM: C.amber, Safety: C.red, Security: C.red, Comms: C.blue }[cat] || C.textDim);
+  const Pill = ({ item }: { item: { name: string; cat: string } }) => (
     <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 18px", marginRight: 12, whiteSpace: "nowrap", flexShrink: 0 }}>
       <div style={{ width: 32, height: 32, borderRadius: 8, background: `${catColor(item.cat)}10`, border: `1px solid ${catColor(item.cat)}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: catColor(item.cat) }}>{item.name.charAt(0)}</div>
       <div><div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{item.name}</div><div style={{ fontSize: 9, fontWeight: 600, color: catColor(item.cat), letterSpacing: 0.5, textTransform: "uppercase" }}>{item.cat}</div></div>
@@ -124,7 +123,7 @@ function IntegrationTicker() {
   </>;
 }
 
-function Nav({ onJoin }) {
+function Nav({ onJoin }: { onJoin: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => { const fn = () => setScrolled(window.scrollY > 50); window.addEventListener("scroll", fn); return () => window.removeEventListener("scroll", fn); }, []);
   return <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 56, padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between", background: scrolled ? "rgba(3,7,18,0.88)" : "transparent", backdropFilter: scrolled ? "blur(16px) saturate(180%)" : "none", borderBottom: scrolled ? `1px solid ${C.border}` : "1px solid transparent", transition: "all 0.35s ease" }}>
