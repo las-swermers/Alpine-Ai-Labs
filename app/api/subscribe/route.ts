@@ -142,7 +142,8 @@ export async function POST(request: NextRequest) {
       ? `https://api.convertkit.com/v3/tags/${tagId}/subscribe`
       : "https://api.convertkit.com/v3/subscribers";
 
-  if (shouldUseFormOrTag) {
+  // Kit V3 API requires api_key and/or api_secret for authentication
+  if (apiKey) {
     payload.api_key = apiKey;
   }
 
