@@ -5,67 +5,38 @@ export const dynamic = "force-dynamic";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type KitErrorResponse = { error?: string; message?: string };
-
-function normalizeEnvValue(value?: string) {
-  const normalized = (value || "").trim();
-  if (!normalized) {
-    return "";
-  }
-
-  const lowered = normalized.toLowerCase();
-  if (lowered === "undefined" || lowered === "null" || lowered === "none") {
-    return "";
-  }
-
-  return normalized;
-}
-
-function getKitConfig() {
-  const apiKey = normalizeEnvValue(process.env.KIT_API_KEY || process.env.CONVERTKIT_API_KEY);
-  const apiSecret = normalizeEnvValue(process.env.KIT_API_SECRET || process.env.CONVERTKIT_API_SECRET);
-  const formId = normalizeEnvValue(process.env.KIT_FORM_ID || process.env.CONVERTKIT_FORM_ID);
-  const tagId = normalizeEnvValue(process.env.KIT_TAG_ID || process.env.CONVERTKIT_TAG_ID);
-
-  return {
-    apiKey,
-    apiSecret,
-    formId,
-    tagId
-  };
-}
-
-function getMissingKitVars(config: ReturnType<typeof getKitConfig>) {
-  const missing: string[] = [];
-
-  const hasFormOrTag = Boolean(config.formId || config.tagId);
-  const canFallbackToSecret = Boolean(config.apiSecret);
-
-  if (hasFormOrTag && !config.apiKey && !canFallbackToSecret) {
-    missing.push("KIT_API_KEY");
-  }
-
-  if (!hasFormOrTag && !canFallbackToSecret) {
-    missing.push("KIT_FORM_ID|KIT_TAG_ID|KIT_API_SECRET");
-  }
-
-  return missing;
-}
-
-async function parseKitError(response: Response) {
-  const text = await response.text();
-  if (!text) {
-    return "Kit request failed.";
-  }
-
-  try {
-    const parsed = JSON.parse(text) as KitErrorResponse;
-    return parsed.message || parsed.error || text;
-  } catch {
-    return text;
-  }
-}
-
+/**
+ * POST /api/subscribe
+ *
+ * Collects consulting page signups (newsletter + resource downloads) and
+ * forwards them to a Google Sheets Apps Script web app.
+ *
+ * Environment variable: GOOGLE_SHEETS_SUBSCRIBE_URL
+ *
+ * Google Sheets setup:
+ * 1. Create a sheet with columns: Timestamp, Email, Name, Role, Resource, Prompt Type, Source
+ * 2. Extensions > Apps Script, paste:
+ *
+ *    function doPost(e) {
+ *      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+ *      var data = JSON.parse(e.postData.contents);
+ *      sheet.appendRow([
+ *        new Date().toISOString(),
+ *        data.email || "",
+ *        data.name || "",
+ *        data.role || "",
+ *        data.resource || "",
+ *        data.promptType || "",
+ *        data.source || ""
+ *      ]);
+ *      return ContentService
+ *        .createTextOutput(JSON.stringify({ status: "ok" }))
+ *        .setMimeType(ContentService.MimeType.JSON);
+ *    }
+ *
+ * 3. Deploy > New deployment > Web app > Execute as "Me", access "Anyone"
+ * 4. Copy the URL and set it as GOOGLE_SHEETS_SUBSCRIBE_URL in Vercel
+ */
 export async function POST(request: NextRequest) {
   let body: {
     email?: string;
@@ -77,7 +48,6 @@ export async function POST(request: NextRequest) {
     source?: string;
     company?: string;
     promptType?: string;
-    webinarIdeas?: string;
   };
 
   try {
@@ -89,91 +59,65 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Honeypot check
   if (body.company) {
     return NextResponse.json({ status: "ok" }, { status: 200 });
   }
 
   const email = body.email?.trim().toLowerCase() ?? "";
+  if (!EMAIL_REGEX.test(email)) {
+    return NextResponse.json(
+      { status: "error", message: "Please enter a valid email address." },
+      { status: 400 }
+    );
+  }
+
   const firstName = body.firstName?.trim() ?? "";
   const lastName = body.lastName?.trim() ?? "";
   const fallbackName = body.name?.trim() ?? "";
-  const fullName = `${firstName} ${lastName}`.trim() || fallbackName;
+  const name = `${firstName} ${lastName}`.trim() || fallbackName;
+  const role = body.role?.trim() || "";
+  const resource = body.resource?.trim() || "";
+  const promptType = body.promptType?.trim() || "";
   const source = body.source?.trim() || "website";
-  const role = body.role?.trim() || "unknown";
-  const resource = body.resource?.trim() || "none_selected";
-  const promptType = body.promptType?.trim() || "none_selected";
-  const webinarIdeas = body.webinarIdeas?.trim() || "";
 
-  if (!EMAIL_REGEX.test(email)) {
-    return NextResponse.json({ status: "error", message: "Invalid email address." }, { status: 400 });
-  }
+  const sheetsUrl = (process.env.GOOGLE_SHEETS_SUBSCRIBE_URL || "").trim();
 
-  const { apiKey, apiSecret, formId, tagId } = getKitConfig();
-  const missingVars = getMissingKitVars({ apiKey, apiSecret, formId, tagId });
-
-  if (missingVars.length > 0) {
-    return NextResponse.json(
-      {
-        status: "error",
-        message: `Missing Kit server configuration: ${missingVars.join(", ")}.`
-      },
-      { status: 500 }
-    );
-  }
-
-  const payload: Record<string, unknown> = {
-    email,
-    first_name: firstName || fullName,
-    ...(lastName ? { last_name: lastName } : {}),
-    fields: {
-      source,
-      role,
-      resource,
-      prompt_type: promptType,
-      ...(webinarIdeas ? { webinar_ideas: webinarIdeas } : {})
-    }
-  };
-
-  const shouldUseFormOrTag = Boolean((formId || tagId) && apiKey);
-
-  const target = shouldUseFormOrTag && formId
-    ? `https://api.convertkit.com/v3/forms/${formId}/subscribe`
-    : shouldUseFormOrTag && tagId
-      ? `https://api.convertkit.com/v3/tags/${tagId}/subscribe`
-      : "https://api.convertkit.com/v3/subscribers";
-
-  // Kit V3 API requires api_key and/or api_secret for authentication
-  if (apiKey) {
-    payload.api_key = apiKey;
-  }
-
-  if (apiSecret) {
-    payload.api_secret = apiSecret;
+  if (!sheetsUrl) {
+    console.log("[subscribe] No GOOGLE_SHEETS_SUBSCRIBE_URL configured. Signup:", {
+      email, name, role, resource, promptType, source,
+      timestamp: new Date().toISOString(),
+    });
+    return NextResponse.json({ status: "ok" }, { status: 200 });
   }
 
   try {
-    const response = await fetch(target, {
+    const response = await fetch(sheetsUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ email, name, role, resource, promptType, source }),
+      redirect: "follow",
     });
 
-    if (response.ok) {
+    if (response.ok || response.status === 302) {
       return NextResponse.json({ status: "ok" }, { status: 200 });
     }
 
-    const errorMessage = (await parseKitError(response)).toLowerCase();
-    if (response.status === 422 && errorMessage.includes("already")) {
-      return NextResponse.json({ status: "duplicate" }, { status: 409 });
+    const text = await response.text();
+    console.error("[subscribe] Google Sheets error:", response.status, text.slice(0, 500));
+
+    if (response.status >= 300 && response.status < 400) {
+      return NextResponse.json({ status: "ok" }, { status: 200 });
     }
 
     return NextResponse.json(
-      { status: "error", message: errorMessage || "Kit request failed." },
-      { status: response.status }
+      { status: "error", message: "Could not save your signup. Please try again." },
+      { status: 502 }
     );
-  } catch {
+  } catch (err) {
+    console.error("[subscribe] Fetch error:", err);
     return NextResponse.json(
-      { status: "error", message: "Could not reach Kit API." },
+      { status: "error", message: "Connection issue. Please try again." },
       { status: 502 }
     );
   }
@@ -181,10 +125,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   return NextResponse.json(
-    {
-      status: "ok",
-      message: "Subscribe endpoint is available. Send a POST request with JSON payload to subscribe."
-    },
+    { status: "ok", message: "Subscribe endpoint is available. POST to submit." },
     { status: 200 }
   );
 }
